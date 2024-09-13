@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Source files
 add_library(${PROJECT_NAME} 
+            #source/writer.cpp
+            source/listener.cpp
+            source/motor_handler.cpp
             )
 
 # Directories containing header files
