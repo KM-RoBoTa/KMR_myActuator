@@ -18,6 +18,10 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <linux/can.h>
+
+#include "config.hpp"
+#include "utils.hpp"
 
 
 /**
@@ -25,7 +29,7 @@
  */
 class Listener {
 public:
-    Listener(int s);
+    Listener(std::vector<Motor*> motors, std::vector<int> ids, int s);
     ~Listener();
 
 
@@ -35,7 +39,12 @@ private:
     std::thread m_thread;
     std::mutex m_mutex;
 
+    std::vector<Motor*> m_motors;
+    int m_nbrMotors;
+    std::vector<int> m_ids;
+
     int listenerLoop(int s);
+    void readModel(can_frame frame);
 };
 
 #endif

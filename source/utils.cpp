@@ -11,33 +11,17 @@
  ******************************************************************************
  */
 
-#ifndef KMR_MYACTU_WRITER_HPP
-#define KMR_MYACTU_WRITER_HPP
-
-#include <vector>
-#include "config.hpp"
 #include "utils.hpp"
 
-/**
- * @brief   CAN bus writer
- */
-class Writer {
-public:
-    Writer(std::vector<Motor*> motors, std::vector<int> ids, int s);
-    ~Writer();
 
-    // Motor infos
-    int requestModel(int id);
-
-
-private:
-    int m_s; // Socket
-    std::vector<int> m_ids;
-
-    std::vector<Motor*> m_motors;
-    int m_nbrMotors;
-
-};
-
-
-#endif
+// Function to return the index of an element k
+int getIndex(std::vector<int> v, int k) 
+{ 
+    auto it = std::find(v.begin(), v.end(), k); 
+    int index = -1;
+  
+    // If element was found 
+    if (it != v.end())  
+        index = it - v.begin(); 
+    return index;
+} 

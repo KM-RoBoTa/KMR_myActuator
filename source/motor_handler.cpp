@@ -28,26 +28,34 @@
 
 using namespace std;
 
-MotorHandler::MotorHandler(const char* can_bus)
+MotorHandler::MotorHandler(vector<int> ids, const char* can_bus)
 {
+    m_ids = ids;
+
+    for (int i=0; i<ids.size(); i++) {
+        Motor* motor = new Motor(ids[i]);
+        m_motors.push_back(motor);
+    }
+
     // Open a socket to be able to communicate over a CAN network
     int s = openSocket(can_bus);
 
     // Create the writer and the listener 
-    m_listener = new Listener(s);
+    m_writer = new Writer(m_motors, ids, s);
+    m_listener = new Listener(m_motors, ids, s);
 }
 
 MotorHandler::~MotorHandler()
 {
     delete m_listener;
-    // delete writer
+    delete m_writer;
 
     // close socket
 }
 
 int MotorHandler::openSocket(const char* can_bus)
 {
-    int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    int s = socket(PF_CAN, SOCK_RAW|SOCK_NONBLOCK, CAN_RAW);
     if (s < 0) {
         cout << "Error opening the socket! Exiting" << endl;
         exit(1);
@@ -73,4 +81,16 @@ int MotorHandler::openSocket(const char* can_bus)
         cout << "Binding ok " << endl;
 
     return s;
+}
+
+/*
+ *****************************************************************************
+ *                               Motor infos
+ ****************************************************************************/
+
+int MotorHandler::getModel(int id)
+{
+    m_writer->requestModel(id);
+
+    return 1;
 }

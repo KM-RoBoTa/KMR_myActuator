@@ -18,13 +18,13 @@
 #include <cmath>
 
 #include <sys/socket.h>
-#include <linux/can.h>
 #include <sys/ioctl.h>
 #include <cstring>
 #include <net/if.h> // network devices
 #include <sstream> // Convert dec-hex
 
 #include "listener.hpp"
+
 
 using namespace std;
 
@@ -33,10 +33,13 @@ using namespace std;
  * @brief       Start the CAN bus listener
  * @param[in]   s Socket
  */
-Listener::Listener(int s)
+Listener::Listener(vector<Motor*> motors, vector<int> ids, int s)
 {
+	m_motors = motors;
+	m_nbrMotors = motors.size();
     m_stopThread = false;
     m_thread = thread(&Listener::listenerLoop, this, s);
+	m_ids = ids;
 
     cout << "Creating the CAN listener's thread..." << endl;
 	usleep(50000);  
@@ -74,15 +77,28 @@ int Listener::listenerLoop(int s)
     while(!stopThread) {
 
         struct can_frame frame;
-        int nbytes = read(s, &frame, sizeof(can_frame));
+        int nbytes = read(s, &frame, sizeof(struct can_frame));
 
         if (nbytes > 0) {
+			
             // Parse the received frame
+
+			// TEMPORARY
+			int function = frame.data[0];
+
+			switch (function)
+			{
+			case 0xB5:
+				readModel(frame);
+				break;
+			
+			default:
+				break;
+			}
         }
 
-
 		// Thread sleep for scheduling
-		//std::this_thread::sleep_for(chrono::microseconds(50));
+		std::this_thread::sleep_for(chrono::microseconds(50));
 
 		{
 			scoped_lock lock(m_mutex);
@@ -91,4 +107,25 @@ int Listener::listenerLoop(int s)
     }
 
     return 0;
+}
+
+
+/*
+ *****************************************************************************
+ *                               Motor infos
+ ****************************************************************************/
+
+
+void Listener::readModel(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Write the read data into the corresponding place
+	scoped_lock lock(m_mutex);
+	for (int i=1; i<FRAME_LENGTH; i++)
+		m_motors[idx]->model[i] = frame.data[i];
 }

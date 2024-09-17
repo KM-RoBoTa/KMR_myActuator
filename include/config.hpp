@@ -11,33 +11,24 @@
  ******************************************************************************
  */
 
-#ifndef KMR_MYACTU_WRITER_HPP
-#define KMR_MYACTU_WRITER_HPP
+#ifndef KMR_MYACTU_CONFIG_HPP
+#define KMR_MYACTU_CONFIG_HPP
 
-#include <vector>
-#include "config.hpp"
-#include "utils.hpp"
+#define FRAME_LENGTH    8
 
 /**
- * @brief   CAN bus writer
+ * @brief   Structure saving the info of a data field
  */
-class Writer {
-public:
-    Writer(std::vector<Motor*> motors, std::vector<int> ids, int s);
-    ~Writer();
+struct Motor {
+    int id;
+    char model[FRAME_LENGTH-1];
 
-    // Motor infos
-    int requestModel(int id);
-
-
-private:
-    int m_s; // Socket
-    std::vector<int> m_ids;
-
-    std::vector<Motor*> m_motors;
-    int m_nbrMotors;
-
+    // Constructor
+    Motor(int id)
+    {
+        this->id = id;
+        std::cout << "created " << std::endl;
+    }
 };
-
 
 #endif

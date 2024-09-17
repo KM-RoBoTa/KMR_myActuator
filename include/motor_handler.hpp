@@ -11,27 +11,34 @@
  ******************************************************************************
  */
 
-#ifndef KMR_MYACTU_MOTOR_HANDLER_HPP
-#define KMR_MYACTU_MOTOR_HANDLER_HPP
-
 #include <iostream>
 #include <vector>
 
 #include "listener.hpp"
-//#include "writer.cpp"
+#include "writer.hpp"
+
+#ifndef KMR_MYACTU_MOTOR_HANDLER_HPP
+#define KMR_MYACTU_MOTOR_HANDLER_HPP
 
 /**
  * @brief   CAN bus listener, running in its own thread
  */
 class MotorHandler {
 public:
-    MotorHandler(const char* can_bus);
+    MotorHandler(std::vector<int> ids, const char* can_bus);
     ~MotorHandler();
+
+    int getModel(int i);
 
 private:
     Listener* m_listener = nullptr;
+    Writer* m_writer = nullptr;
+
+    std::vector<int> m_ids;
+    std::vector<Motor*> m_motors;
 
     int openSocket(const char* can_bus);
+    
 
 };
 
