@@ -31,6 +31,7 @@ using namespace std;
 MotorHandler::MotorHandler(vector<int> ids, const char* can_bus)
 {
     m_ids = ids;
+    m_nbrMotors = m_ids.size();
 
     for (int i=0; i<ids.size(); i++) {
         Motor* motor = new Motor(ids[i]);
@@ -83,14 +84,88 @@ int MotorHandler::openSocket(const char* can_bus)
     return s;
 }
 
+// TIMEOUT???
+void MotorHandler::pingMotors()
+{
+    for (int i=0; i<m_nbrMotors; i++)
+        m_writer->requestModel(m_ids[i]);
+
+    for (int i=0; i<m_nbrMotors; i++) {
+        int id = m_ids[i];
+        bool hasResponded = 0;
+        char model[FRAME_LENGTH-1];
+
+        // Wait for the model update
+        while(hasResponded != 1)
+            m_listener->getModel(id, hasResponded, model);
+
+        if (hasResponded == 1) {
+            cout << "Motor " << id << " pinged successfully. Model: ";
+            for (int j=0; j<FRAME_LENGTH-1; j++)
+                cout << model[j];
+            cout << endl;
+        }
+        else {
+            cout << "Error! Motor " << id << " is not responding" << endl;
+            exit(1);
+        }
+    }
+}
+
+
 /*
  *****************************************************************************
  *                               Motor infos
  ****************************************************************************/
 
-int MotorHandler::getModel(int id)
+void MotorHandler::writeTorque(vector<float> torques) 
 {
-    m_writer->requestModel(id);
+    writeTorque(m_ids, torques);
+}
 
-    return 1;
+
+void MotorHandler::writeTorque(vector<int> ids, vector<float> torques) 
+{
+    for (int i=0; i<ids.size(); i++)
+        m_writer->writeTorque(ids[i], torques[i]);
+}
+
+void MotorHandler::getTorqueFbck(vector<float>& torqueFbck)
+{
+    getTorqueFbck(m_ids, torqueFbck);
+}
+
+void MotorHandler::getTorqueFbck(vector<int> ids, vector<float>& torqueFbck)
+{
+    for (int i=0; i<ids.size(); i++)
+        m_writer->requestMotorFbck(ids[i]);
+
+    for (int i=0; i<ids.size(); i++)
+        torqueFbck[i] = m_listener->getTorque(ids[i]);
+}
+
+void MotorHandler::writeSpeed(vector<float> speeds) 
+{
+    writeSpeed(m_ids, speeds);
+}
+
+
+void MotorHandler::writeSpeed(vector<int> ids, vector<float> speeds) 
+{
+    for (int i=0; i<ids.size(); i++)
+        m_writer->writeSpeed(ids[i], speeds[i]);
+}
+
+void MotorHandler::getSpeedFbck(vector<float>& speedFbck)
+{
+    getSpeedFbck(m_ids, speedFbck);
+}
+
+void MotorHandler::getSpeedFbck(vector<int> ids, vector<float>& speedFbck)
+{
+    for (int i=0; i<ids.size(); i++)
+        m_writer->requestMotorFbck(ids[i]);
+
+    for (int i=0; i<ids.size(); i++)
+        speedFbck[i] = m_listener->getSpeed(ids[i]);
 }

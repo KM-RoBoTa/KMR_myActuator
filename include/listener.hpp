@@ -32,6 +32,17 @@ public:
     Listener(std::vector<Motor*> motors, std::vector<int> ids, int s);
     ~Listener();
 
+    void getModel(int id, bool& hasResponded, char model[]);
+
+    // Status fbck
+    float getTorque(int id);
+    float getSpeed(int id);
+    float getAngle(int id);
+    float getTemperature(int id);
+    
+
+
+
 
 private:
     // Thread
@@ -45,6 +56,10 @@ private:
 
     int listenerLoop(int s);
     void readModel(can_frame frame);
+    void parseTorqueCommand(can_frame frame);
+
+    // Status fbck
+    void parseMotorFbck(can_frame frame);
 };
 
 #endif

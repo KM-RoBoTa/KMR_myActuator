@@ -28,6 +28,19 @@ public:
     MotorHandler(std::vector<int> ids, const char* can_bus);
     ~MotorHandler();
 
+    void pingMotors();
+
+    // Mode command
+    void writeTorque(std::vector<int> ids, std::vector<float> torques);
+    void writeTorque(std::vector<float> torques);
+    void getTorqueFbck(std::vector<int> ids, std::vector<float>& torqueFbck);
+    void getTorqueFbck(std::vector<float>& torqueFbck);
+    void writeSpeed(std::vector<float> speeds);
+    void writeSpeed(std::vector<int> ids, std::vector<float> speeds);
+    void getSpeedFbck(std::vector<float>& speedFbck);
+    void getSpeedFbck(std::vector<int> ids, std::vector<float>& speedFbck);
+
+
     int getModel(int i);
 
 private:
@@ -36,6 +49,7 @@ private:
 
     std::vector<int> m_ids;
     std::vector<Motor*> m_motors;
+    int m_nbrMotors;
 
     int openSocket(const char* can_bus);
     

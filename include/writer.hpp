@@ -28,6 +28,9 @@ public:
 
     // Motor infos
     int requestModel(int id);
+    int writeTorque(int id, float torque);
+    int writeSpeed(int id, float speed);
+    int requestMotorFbck(int id);
 
 
 private:

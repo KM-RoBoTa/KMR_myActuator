@@ -21,4 +21,7 @@
 // Function to return the index of an element k
 int getIndex(std::vector<int> v, int k);
 
+float deg2rad(float deg);
+float rad2deg(float rad);
+
 #endif

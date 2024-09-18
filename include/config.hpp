@@ -22,12 +22,22 @@
 struct Motor {
     int id;
     char model[FRAME_LENGTH-1];
+    int temperature;
+    float torque;
+    float speed; 
+    float angle;
+
+    // Update flags
+    bool f_model = 0;
+    bool f_temperature = 0;
+    bool f_torque = 0;
+    bool f_speed = 0;
+    bool f_angle = 0;
 
     // Constructor
     Motor(int id)
     {
         this->id = id;
-        std::cout << "created " << std::endl;
     }
 };
 
