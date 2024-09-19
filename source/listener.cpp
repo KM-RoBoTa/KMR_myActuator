@@ -95,6 +95,11 @@ int Listener::listenerLoop(int s)
 			case 0x42:	parseAccSettingsFbck(frame); break;
 			case 0x43:	parseAccSettings_write(frame); break;
 
+			case 0x80:	parseShutdown(frame); break;
+			case 0x81:	parseStop(frame); break;
+			case 0x77:	parseBrakeRelease(frame); break;
+			case 0x78:	parseBrakeLock(frame); break;
+
 			case 0xB5: 	readModel(frame);	break;
 			case 0xA1:	parseTorqueCommand(frame); break;
 			case 0xA2: 	parseSpeedCommand(frame); break;
@@ -147,7 +152,7 @@ bool Listener::getPID(int id, PacketPID& packetPID)
 		packetPID.Ki_pos = m_motors[idx]->Ki_pos;
 
 		// Clear update flag
-		m_motors[idx]->fr_PID = 0;
+		m_motors[idx]->fr_PID = 0;void parseShutdown(can_frame frame);
 	}
 
 	return available;	
@@ -298,8 +303,107 @@ bool Listener::accSettingWritten(int id, ACC_SETTINGS setting)
 }
 
 
+// --------- On/off  ----------- //
 
+bool Listener::shutdown_received(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
 
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Shutdown acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_shutdown;
+
+		// Clear update flag
+		m_motors[idx]->f_shutdown = 0;
+	}
+
+	return available;		
+}
+
+bool Listener::stop_received(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Stop acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_stop;
+
+		// Clear update flag
+		m_motors[idx]->f_stop = 0;
+	}
+
+	return available;		
+}
+
+bool Listener::brake_release_received(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Brake release acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_brake;
+
+		// Clear update flag
+		m_motors[idx]->f_brake = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::brake_lock_received(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Brake lock acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_brake;
+
+		// Clear update flag
+		m_motors[idx]->f_brake = 0;
+	}
+
+	return available;	
+}
 
 
 
@@ -546,6 +650,60 @@ void Listener::parseAccSettings_write(can_frame frame)
 	}
 }
 
+// --------- On/off  ----------- //
+
+
+void Listener::parseShutdown(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Set up confirmation flag
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->f_shutdown = 1;		
+}
+
+void Listener::parseStop(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Set up confirmation flag
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->f_stop = 1;		
+}
+
+void Listener::parseBrakeRelease(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Set up confirmation flag
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->f_brake = 1;	
+}
+
+void Listener::parseBrakeLock(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Set up confirmation flag
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->f_brake = 1;	
+}
 
 
 

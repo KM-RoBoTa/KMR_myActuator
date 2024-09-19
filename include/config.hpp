@@ -50,7 +50,11 @@ struct Motor {
     bool fr_PID = 0;        // flag read PID
     bool fw_PID_RAM = 0;
     bool fw_PID_EEPROM = 0;
-    
+
+    bool f_shutdown = 0;
+    bool f_stop = 0;
+    bool f_brake = 0;
+
     bool fw_speed = 0;
     bool fr_posAcc = 0;
     bool fr_posDec = 0;

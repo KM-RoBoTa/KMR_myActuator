@@ -207,6 +207,116 @@ int Writer::writeAccSettings(int id, ACC_SETTINGS setting, int value)
     return nbytes;    
 }
 
+// --------- On/off ----------- //
+
+int Writer::requestShutdown(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x80;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;        
+}
+
+int Writer::requestStop(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x81;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;           
+}
+
+int Writer::requestReset(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x76;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;           
+}
+
+int Writer::requestBrakeRelease(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x77;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;    
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;  
+}
+
+int Writer::requestBrakeLock(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x78;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;    
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;  
+}
+
+
+
+
 
 
 

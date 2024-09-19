@@ -35,11 +35,20 @@ public:
     int requestAccSettings(int id, ACC_SETTINGS setting);           // 0x42
     int writeAccSettings(int id, ACC_SETTINGS setting, int value);  // 0x43
 
+    // On/off
+    int requestShutdown(int id);        // 0x80
+    int requestStop(int id);            // 0x81   
+    int requestReset(int id);           // 0x76     
+    int requestBrakeRelease(int id);    // 0x77
+    int requestBrakeLock(int id);       // 0x78
+
     // Motor infos
     int requestModel(int id);
     int writeTorque(int id, float torque);
     int writeSpeed(int id, float speed);
     int requestMotorFbck(int id);
+
+
 
 
 private:

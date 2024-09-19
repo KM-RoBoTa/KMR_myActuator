@@ -43,6 +43,12 @@ public:
     bool getAccSettings(int id, ACC_SETTINGS setting, int& acc);
     bool accSettingWritten(int id, ACC_SETTINGS setting);
 
+    // --------- On/off  ----------- //
+    bool shutdown_received(int id);
+    bool stop_received(int id);
+    bool brake_release_received(int id);
+    bool brake_lock_received(int id);
+
     // Status fbck
     float getTorque(int id);
     float getSpeed(int id);
@@ -73,6 +79,13 @@ private:
     // --------- Acc settings  ----------- //
     void parseAccSettingsFbck(can_frame frame);
     void parseAccSettings_write(can_frame frame);
+
+    // --------- On/off  ----------- //
+    void parseShutdown(can_frame frame);
+    void parseStop(can_frame frame);
+    void parseBrakeRelease(can_frame frame);
+    void parseBrakeLock(can_frame frame);
+
 
     void readModel(can_frame frame);
 

@@ -257,6 +257,141 @@ bool MotorHandler::writeAccelerationSettings(ACC_SETTINGS setting, vector<int> a
 }
 
 
+// --------- On/off  ----------- //
+
+// Stops speed + torque. Doesn't write to EEPROM (to check)
+bool MotorHandler::shutdownMotors(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestShutdown(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send shutdown for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->shutdown_received(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;            
+}
+
+// Stops speed + torque. Doesn't write to EEPROM (to check)
+bool MotorHandler::shutdownMotors()
+{
+    return(shutdownMotors(m_ids));
+}
+
+// Stops speed, keeps torque
+bool MotorHandler::stopMotors(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestStop(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send stop for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->stop_received(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;            
+}
+
+// Stops speed, keeps torque
+bool MotorHandler::stopMotors()
+{
+    return(stopMotors(m_ids));
+}
+
+// Need some sleep time after the reset
+bool MotorHandler::resetMotors(std::vector<int> ids)
+{
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestReset(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send reset for motor " << ids[i] << endl;
+        else
+            fullSuccess += 1;
+    }
+
+    // Since the motor is resetting, no feedback
+
+    // If no problem sending to any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;   
+
+}
+
+// Stops speed, keeps torque
+bool MotorHandler::resetMotors()
+{
+    return(resetMotors(m_ids));
+}
+
+bool MotorHandler::releaseBrake(vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestBrakeRelease(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send brake release for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->brake_release_received(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;            
+}
+
+bool MotorHandler::releaseBrake()
+{
+    return(releaseBrake(m_ids));          
+}
+
+bool MotorHandler::lockBrake(vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestBrakeLock(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send brake lock for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->brake_lock_received(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;            
+}
+
+bool MotorHandler::lockBrake()
+{
+    return(lockBrake(m_ids));          
+}
+
+
+
 
 
 

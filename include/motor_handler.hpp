@@ -44,6 +44,18 @@ public:
     bool writeAccelerationSettings(std::vector<int> ids, ACC_SETTINGS setting, std::vector<int> accs);
     bool writeAccelerationSettings(ACC_SETTINGS setting, std::vector<int> accs);
 
+    // --------- On/off  ----------- //
+    bool shutdownMotors(std::vector<int> ids);
+    bool shutdownMotors();
+    bool stopMotors(std::vector<int> ids);
+    bool stopMotors();
+    bool resetMotors(std::vector<int> ids);
+    bool resetMotors();
+    bool releaseBrake(std::vector<int> ids);      
+    bool releaseBrake();    
+    bool lockBrake(std::vector<int> ids);     
+    bool lockBrake();  
+
     // Mode command
     void writeTorque(std::vector<int> ids, std::vector<float> torques);
     void writeTorque(std::vector<float> torques);
