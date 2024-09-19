@@ -34,13 +34,22 @@ public:
 
     void getModel(int id, bool& hasResponded, char model[]);
 
+    // --------- PID ----------- //
+    bool getPID(int id, PacketPID& packetPID);
+    bool PID_written_RAM(int id);
+    bool PID_written_EEPROM(int id);
+
+    // --------- Acc settings  ----------- //
+    bool getAccSettings(int id, ACC_SETTINGS setting, int& acc);
+    bool accSettingWritten(int id, ACC_SETTINGS setting);
+
     // Status fbck
     float getTorque(int id);
     float getSpeed(int id);
     float getAngle(int id);
     float getTemperature(int id);
     
-
+    bool speedWritten(int id);
 
 
 
@@ -55,8 +64,21 @@ private:
     std::vector<int> m_ids;
 
     int listenerLoop(int s);
+
+    // --------- PID ----------- //
+    void parsePIDFbck(can_frame frame);
+    void parsePID_RAM_write(can_frame frame);
+    void parsePID_EEPROM_write(can_frame frame);
+
+    // --------- Acc settings  ----------- //
+    void parseAccSettingsFbck(can_frame frame);
+    void parseAccSettings_write(can_frame frame);
+
     void readModel(can_frame frame);
+
+    // PARSE SPEED
     void parseTorqueCommand(can_frame frame);
+    void parseSpeedCommand(can_frame frame);
 
     // Status fbck
     void parseMotorFbck(can_frame frame);

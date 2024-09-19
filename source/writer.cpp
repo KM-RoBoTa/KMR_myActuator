@@ -17,7 +17,6 @@
 
 #include "writer.hpp"
 
-
 using namespace std;
 
 /**
@@ -44,6 +43,174 @@ Writer::~Writer()
  *****************************************************************************
  *                               Motor infos
  ****************************************************************************/
+
+// --------- PID ----------- //
+
+int Writer::requestPID(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x30;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+
+int Writer::writePID_RAM(int id, PacketPID packetPID)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x31;
+    frame.data[1] = 0x00;
+    frame.data[2] = (int8_t) packetPID.Kp_torque;
+    frame.data[3] = (int8_t) packetPID.Ki_torque;
+    frame.data[4] = (int8_t) packetPID.Kp_speed;
+    frame.data[5] = (int8_t) packetPID.Ki_speed;
+    frame.data[6] = (int8_t) packetPID.Kp_pos;
+    frame.data[7] = (int8_t) packetPID.Ki_pos;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+
+int Writer::writePID_EEPROM(int id, PacketPID packetPID)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x32;
+    frame.data[1] = 0x00;
+    frame.data[2] = (int8_t) packetPID.Kp_torque;
+    frame.data[3] = (int8_t) packetPID.Ki_torque;
+    frame.data[4] = (int8_t) packetPID.Kp_speed;
+    frame.data[5] = (int8_t) packetPID.Ki_speed;
+    frame.data[6] = (int8_t) packetPID.Kp_pos;
+    frame.data[7] = (int8_t) packetPID.Ki_pos;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+// --------- Acc settings  ----------- //
+
+int Writer::requestAccSettings(int id, ACC_SETTINGS setting)
+{
+    int8_t mode = 0;
+    switch (setting)
+    {
+    case POSITION_ACC:
+        mode = 0x00;
+        break;
+    case POSITION_DEC:
+        mode = 0x01;
+        break;
+    case SPEED_ACC:
+        mode = 0x02;
+        break;
+    case SPEED_DEC:
+        mode = 0x03;
+        break;
+    default:
+        cout << "Error! Unknown acceleration setting. Exiting" << endl;
+        exit(1);
+        break;
+    }
+
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x42;
+    frame.data[1] = mode;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+// Writes to EEPROM. Value between 1.74 and 1047 rad/s²
+int Writer::writeAccSettings(int id, ACC_SETTINGS setting, int value)
+{
+    float convert = rad2deg((float) value);
+    value = (int) convert;
+
+    const int min = 100;
+    const int max = 60000;
+    value = saturate(min, max, value);
+    int32_t parameter = (int32_t) value;
+
+    // Parse which setting we're writing to
+    int8_t mode = 0;
+    switch (setting)
+    {
+    case POSITION_ACC:
+        mode = 0x00;
+        break;
+    case POSITION_DEC:
+        mode = 0x01;
+        break;
+    case SPEED_ACC:
+        mode = 0x02;
+        break;
+    case SPEED_DEC:
+        mode = 0x03;
+        break;
+    default:
+        cout << "Error! Unknown acceleration setting. Exiting" << endl;
+        exit(1);
+        break;
+    }
+
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x43;
+    frame.data[1] = mode;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = (int8_t) (parameter);
+    frame.data[5] = (int8_t) (parameter >> 8);
+    frame.data[6] = (int8_t) (parameter >> 16);
+    frame.data[7] = (int8_t) (parameter >> 24);
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+
+
+
+
 
 int Writer::requestModel(int id)
 {

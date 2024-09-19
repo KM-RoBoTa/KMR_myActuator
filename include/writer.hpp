@@ -26,6 +26,15 @@ public:
     Writer(std::vector<Motor*> motors, std::vector<int> ids, int s);
     ~Writer();
 
+    // PID settings
+    int requestPID(int id);                             // 0x30
+    int writePID_RAM(int id, PacketPID packetPID);      // 0x31
+    int writePID_EEPROM(int id, PacketPID packetPID);   // 0x32
+
+    // Acceleration settings
+    int requestAccSettings(int id, ACC_SETTINGS setting);           // 0x42
+    int writeAccSettings(int id, ACC_SETTINGS setting, int value);  // 0x43
+
     // Motor infos
     int requestModel(int id);
     int writeTorque(int id, float torque);

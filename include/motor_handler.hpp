@@ -30,6 +30,20 @@ public:
 
     void pingMotors();
 
+    // --------- PID ----------- //
+    bool getPID(std::vector<int> ids, std::vector<PacketPID>& vecPID);
+    bool getPID(std::vector<PacketPID>& vecPID);
+    bool writePID_RAM(std::vector<int> ids, std::vector<PacketPID> vecPID);
+    bool writePID_RAM(std::vector<PacketPID> vecPID);
+    bool writePID_EEPROM(std::vector<int> ids, std::vector<PacketPID> vecPID);
+    bool writePID_EEPROM(std::vector<PacketPID> vecPID);
+
+    // --------- Acc settings  ----------- //
+    bool getAccelerationSettings(std::vector<int> ids, ACC_SETTINGS setting, std::vector<int>& accs);
+    bool getAccelerationSettings(ACC_SETTINGS setting, std::vector<int>& accs);
+    bool writeAccelerationSettings(std::vector<int> ids, ACC_SETTINGS setting, std::vector<int> accs);
+    bool writeAccelerationSettings(ACC_SETTINGS setting, std::vector<int> accs);
+
     // Mode command
     void writeTorque(std::vector<int> ids, std::vector<float> torques);
     void writeTorque(std::vector<float> torques);

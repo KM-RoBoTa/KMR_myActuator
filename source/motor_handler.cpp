@@ -118,6 +118,150 @@ void MotorHandler::pingMotors()
  *                               Motor infos
  ****************************************************************************/
 
+// --------- PID ----------- //
+bool MotorHandler::getPID(vector<int> ids, vector<PacketPID>& vecPID)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestPID(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send PID-reading for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        PacketPID tempPacket;
+        bool success = m_listener->getPID(ids[i], tempPacket);
+        if (success)
+            vecPID[i] = tempPacket;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;
+}
+
+bool MotorHandler::getPID(vector<PacketPID>& vecPID)
+{
+    return(getPID(m_ids, vecPID));
+}
+
+
+bool MotorHandler::writePID_RAM(vector<int> ids, vector<PacketPID> vecPID)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writePID_RAM(ids[i], vecPID[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send PID-writing to RAM for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->PID_written_RAM(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;    
+}
+
+bool MotorHandler::writePID_RAM(vector<PacketPID> vecPID)
+{
+    return(writePID_RAM(m_ids, vecPID));
+}
+
+bool MotorHandler::writePID_EEPROM(vector<int> ids, vector<PacketPID> vecPID)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writePID_EEPROM(ids[i], vecPID[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send PID-writing to EEPROM for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->PID_written_EEPROM(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;   
+
+    //RESET MOTORS???
+}
+
+bool MotorHandler::writePID_EEPROM(vector<PacketPID> vecPID)
+{
+    return(writePID_EEPROM(m_ids, vecPID));
+}
+
+
+// --------- Acc settings  ----------- //
+
+bool MotorHandler::getAccelerationSettings(vector<int> ids, ACC_SETTINGS setting, vector<int>& accs)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestAccSettings(ids[i], setting) < 0)
+            cout << "[FAILED REQUEST] Failed to send acc. reading for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        int temp;
+        bool success = m_listener->getAccSettings(ids[i], setting, temp);
+        if (success)
+            accs[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;           
+}
+
+bool MotorHandler::getAccelerationSettings(ACC_SETTINGS setting, vector<int>& accs)
+{
+    return(getAccelerationSettings(m_ids, setting, accs));
+}
+
+bool MotorHandler::writeAccelerationSettings(vector<int> ids, ACC_SETTINGS setting, vector<int> accs)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writeAccSettings(ids[i], setting, accs[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send acc-writing to EEPROM for motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->accSettingWritten(ids[i], setting);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;            
+}
+
+bool MotorHandler::writeAccelerationSettings(ACC_SETTINGS setting, vector<int> accs)
+{
+    return(writeAccelerationSettings(m_ids, setting, accs));
+}
+
+
+
+
+
+
+
 void MotorHandler::writeTorque(vector<float> torques) 
 {
     writeTorque(m_ids, torques);
@@ -147,6 +291,9 @@ void MotorHandler::getTorqueFbck(vector<int> ids, vector<float>& torqueFbck)
 void MotorHandler::writeSpeed(vector<float> speeds) 
 {
     writeSpeed(m_ids, speeds);
+
+    for (int i=0; i<m_ids.size(); i++)
+        bool done = m_listener->speedWritten(m_ids[i]);
 }
 
 
