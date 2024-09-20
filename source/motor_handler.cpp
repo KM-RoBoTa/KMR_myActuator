@@ -385,7 +385,7 @@ bool MotorHandler::lockBrake()
 }
 
 
-// --------- Acc settings  ----------- //
+// --------- Status and error reports  ----------- //
 
 bool MotorHandler::getErrorReport(vector<int> ids, vector<ErrorReport>& errorReports)
 {
@@ -415,8 +415,6 @@ bool MotorHandler::getErrorReport(vector<ErrorReport>& errorReports)
     return(getErrorReport(m_ids, errorReports));
 }
 
-// todo
-
 bool MotorHandler::getPhaseReport(vector<int> ids, vector<PhaseReport>& phaseReports)
 {
     for (int i=0; i<ids.size(); i++) {
@@ -443,6 +441,121 @@ bool MotorHandler::getPhaseReport(vector<int> ids, vector<PhaseReport>& phaseRep
 bool MotorHandler::getPhaseReport(vector<PhaseReport>& phaseReports)
 {
     return(getPhaseReport(m_ids, phaseReports));
+}
+
+
+bool MotorHandler::getTorqueFbck(vector<int> ids, vector<float>& torqueFbck)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestMotorFbck(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send feedback request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        float temp = 0;
+        bool success = m_listener->getTorque(ids[i], temp);
+        if (success)
+            torqueFbck[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;      
+}
+
+bool MotorHandler::getTorqueFbck(vector<float>& torqueFbck)
+{
+    return(getTorqueFbck(m_ids, torqueFbck));
+}
+
+
+bool MotorHandler::getSpeedFbck(vector<int> ids, vector<float>& speedFbck)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestMotorFbck(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send feedback request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        float temp = 0;
+        bool success = m_listener->getSpeed(ids[i], temp);
+        if (success)
+            speedFbck[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;      
+}
+
+bool MotorHandler::getSpeedFbck(vector<float>& speedFbck)
+{
+    return(getSpeedFbck(m_ids, speedFbck));
+}
+
+
+bool MotorHandler::getTemperatureFbck(vector<int> ids, vector<int>& tempFbck)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestMotorFbck(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send feedback request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        int temp = 0;
+        bool success = m_listener->getTemperature(ids[i], temp);
+        if (success)
+            tempFbck[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;      
+}
+
+bool MotorHandler::getTemperatureFbck(vector<int>& tempFbck)
+{
+    return(getTemperatureFbck(m_ids, tempFbck));
+}
+
+bool MotorHandler::getFullFbck(vector<int> ids, vector<StatusReport>& statusReport)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestMotorFbck(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send feedback request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        StatusReport temp;
+        bool success = m_listener->getFullStatusReport(ids[i], temp);
+        if (success)
+            statusReport[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;     
+}
+
+bool MotorHandler::getFullFbck(std::vector<StatusReport>& statusReport)
+{
+    return(getFullFbck(m_ids, statusReport));
 }
 
 
@@ -548,44 +661,4 @@ bool MotorHandler::getModel(vector<int> ids, vector<std::string>& models)
         return 1;
     else
         return 0;      
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-void MotorHandler::getTorqueFbck(vector<float>& torqueFbck)
-{
-    getTorqueFbck(m_ids, torqueFbck);
-}
-
-void MotorHandler::getTorqueFbck(vector<int> ids, vector<float>& torqueFbck)
-{
-    for (int i=0; i<ids.size(); i++)
-        m_writer->requestMotorFbck(ids[i]);
-
-    for (int i=0; i<ids.size(); i++)
-        torqueFbck[i] = m_listener->getTorque(ids[i]);
-}
-
-void MotorHandler::getSpeedFbck(vector<float>& speedFbck)
-{
-    getSpeedFbck(m_ids, speedFbck);
-}
-
-void MotorHandler::getSpeedFbck(vector<int> ids, vector<float>& speedFbck)
-{
-    for (int i=0; i<ids.size(); i++)
-        m_writer->requestMotorFbck(ids[i]);
-
-    for (int i=0; i<ids.size(); i++)
-        speedFbck[i] = m_listener->getSpeed(ids[i]);
 }

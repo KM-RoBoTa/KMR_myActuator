@@ -59,9 +59,19 @@ public:
     // --------- Status and errors  ----------- //
     bool getErrorReport(std::vector<int> ids, std::vector<ErrorReport>& errorReports);
     bool getErrorReport(std::vector<ErrorReport>& errorReports);
-    // todo
     bool getPhaseReport(std::vector<int> ids, std::vector<PhaseReport>& phaseReports);
     bool getPhaseReport(std::vector<PhaseReport>& phaseReports);
+
+    bool getTorqueFbck(std::vector<int> ids, std::vector<float>& torqueFbck);
+    bool getTorqueFbck(std::vector<float>& torqueFbck);
+    bool getSpeedFbck(std::vector<int> ids, std::vector<float>& speedFbck);
+    bool getSpeedFbck(std::vector<float>& speedFbck);
+    //bool getAngleFbck(std::vector<int> ids, std::vector<float>& speedFbck);
+    //bool getAngleFbck(std::vector<float>& speedFbck);
+    bool getTemperatureFbck(std::vector<int> ids, std::vector<int>& tempFbck);
+    bool getTemperatureFbck(std::vector<int>& tempFbck);
+    bool getFullFbck(std::vector<int> ids, std::vector<StatusReport>& statusReport);
+    bool getFullFbck(std::vector<StatusReport>& statusReport);
 
     // ----------  Commands ----------- //
     bool writeTorque(std::vector<int> ids, std::vector<float> torques);
@@ -75,18 +85,6 @@ public:
 
     // ----------  Motor info ----------- //
     bool getModel(std::vector<int> ids, std::vector<std::string>& models);
-
-
-
-
-    // Mode command
-    void getTorqueFbck(std::vector<int> ids, std::vector<float>& torqueFbck);
-    void getTorqueFbck(std::vector<float>& torqueFbck);
-
-    void getSpeedFbck(std::vector<float>& speedFbck);
-    void getSpeedFbck(std::vector<int> ids, std::vector<float>& speedFbck);
-
-
 
 
 private:

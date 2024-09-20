@@ -49,8 +49,13 @@ public:
 
     // ---- Status and errors ---- //
     bool getErrorReport(int id, ErrorReport& errorReport);
-    // todo
     bool getPhaseReport(int id, PhaseReport& phaseReport);
+
+    bool getTorque(int id, float& torque);
+    bool getSpeed(int id, float& speed);
+    bool getAngle(int id, float& angle);
+    bool getTemperature(int id, int& temperature);
+    bool getFullStatusReport(int id, StatusReport& statusReport);
 
     // ---- Commands ---- //
     bool torque_command_received(int id);
@@ -59,12 +64,6 @@ public:
 
     // ---- Motor info ---- //
     bool getModel(int id, std::string& model);
-
-    // Status fbck
-    float getTorque(int id);
-    float getSpeed(int id);
-    float getAngle(int id);
-    float getTemperature(int id);
     
 
 
@@ -99,7 +98,7 @@ private:
 
     // ---- Status and errors ---- //
     void parseErrorReport(can_frame frame);
-    // todo
+    void parseMotorFbck(can_frame frame);
     void parsePhaseReport(can_frame frame);
 
     // ---- Commands ---- //
@@ -110,10 +109,6 @@ private:
     // ---- Motor info ---- //
     void parseModel(can_frame frame);
 
-
-
-    // Status fbck
-    void parseMotorFbck(can_frame frame);
 };
 
 #endif

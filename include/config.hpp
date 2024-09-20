@@ -61,6 +61,14 @@ struct PIDReport {
     int Ki_pos = 50;
 };
 
+struct StatusReport {
+    int temperature;
+    float torque;
+    float speed; 
+    float angle;
+};
+
+
 /**
  * @brief   Structure saving the info of a data field
  */
@@ -86,10 +94,11 @@ struct Motor {
 
     // Update flags
     bool f_model = 0;
-    bool f_temperature = 0;
-    bool f_torque = 0;
-    bool f_speed = 0;
-    bool f_angle = 0;
+    bool fr_temperature = 0;
+    bool fr_torque = 0;
+    bool fr_speed = 0;
+    bool fr_angle = 0;
+    bool fr_fullFbck = 0;
 
     bool fr_PID = 0;        // flag read PID
     bool fw_PID_RAM = 0;

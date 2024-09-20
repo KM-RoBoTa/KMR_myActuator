@@ -441,8 +441,6 @@ bool Listener::getErrorReport(int id, ErrorReport& errorReport)
 	return available;	
 }
 
-// todo
-
 bool Listener::getPhaseReport(int id, PhaseReport& phaseReport)
 {
 	int idx = getIndex(m_ids, id);
@@ -468,6 +466,141 @@ bool Listener::getPhaseReport(int id, PhaseReport& phaseReport)
 
 	return available;	
 }
+
+bool Listener::getTorque(int id, float& torque)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The torque feedback of motor " << id << " timed out!" << endl;
+			break;
+		}
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_torque;
+		torque = m_motors[idx]->torque;
+
+		// Clear update flag
+		m_motors[idx]->fr_torque = 0;
+	}
+
+	return available;
+}
+
+bool Listener::getSpeed(int id, float& speed)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The speed feedback of motor " << id << " timed out!" << endl;
+			break;
+		}
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_speed;
+		speed = m_motors[idx]->speed;
+
+		// Clear update flag
+		m_motors[idx]->fr_speed = 0;
+	}
+
+	return available;
+}
+
+bool Listener::getAngle(int id, float& angle)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The angle feedback of motor " << id << " timed out!" << endl;
+			break;
+		}
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_angle;
+		angle = m_motors[idx]->angle;
+
+		// Clear update flag
+		m_motors[idx]->fr_angle = 0;
+	}
+
+	return available;
+}
+
+bool Listener::getTemperature(int id, int& temperature)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The temperature feedback of motor " << id << " timed out!" << endl;
+			break;
+		}
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_temperature;
+		temperature = m_motors[idx]->temperature;
+
+		// Clear update flag
+		m_motors[idx]->fr_temperature = 0;
+	}
+
+	return available;
+}
+
+
+bool Listener::getFullStatusReport(int id, StatusReport& statusReport)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The full status feedback of motor " << id << " timed out!" << endl;
+			break;
+		}
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_fullFbck;
+		statusReport.angle = m_motors[idx]->angle;
+		statusReport.torque = m_motors[idx]->torque;
+		statusReport.speed = m_motors[idx]->speed;
+		statusReport.temperature = m_motors[idx]->temperature;
+
+		// Clear update flag
+		m_motors[idx]->fr_fullFbck = 0;
+	}
+
+	return available;
+}
+
 
 // --------- Commands ----------- //
 
@@ -582,82 +715,6 @@ bool Listener::getModel(int id, string& model)
 
 
 
-
-
-
-
-
-float Listener::getTorque(int id)
-{
-	int idx = getIndex(m_ids, id);
-	bool available = 0;
-	float torque = 0;
-
-	while (available != 1) {
-		scoped_lock lock(m_mutex);
-		available = m_motors[idx]->f_torque;
-		torque = m_motors[idx]->torque;
-
-		// Clear update flag
-		m_motors[idx]->f_torque = 0;
-	}
-
-	return torque;
-}
-
-float Listener::getSpeed(int id)
-{
-	int idx = getIndex(m_ids, id);
-	bool available = 0;
-	float speed = 0;
-
-	while (available != 1) {
-		scoped_lock lock(m_mutex);
-		available = m_motors[idx]->f_speed;
-		speed = m_motors[idx]->speed;
-
-		// Clear update flag
-		m_motors[idx]->f_speed = 0;
-	}
-
-	return speed;
-}
-
-float Listener::getAngle(int id)
-{
-	int idx = getIndex(m_ids, id);
-	bool available = 0;
-	float angle = 0;
-
-	while (available != 1) {
-		scoped_lock lock(m_mutex);
-		available = m_motors[idx]->f_angle;
-		angle = m_motors[idx]->angle;
-
-		// Clear update flag
-		m_motors[idx]->f_angle = 0;
-	}
-
-	return angle;
-}
-
-float Listener::getTemperature(int id)
-{
-	int idx = getIndex(m_ids, id);
-	bool available = 0;
-	float temperature = 0;
-
-	while (available != 1) {
-		scoped_lock lock(m_mutex);
-		available = m_motors[idx]->f_temperature;
-		temperature = m_motors[idx]->temperature;
-
-		// Clear update flag
-		m_motors[idx]->f_temperature = 0;
-	}
-
-	return temperature;
-}
 /*
  *****************************************************************************
  *                               Motor infos
@@ -904,8 +961,51 @@ void Listener::parseErrorReport(can_frame frame)
 	m_motors[idx]->f_errorReport = 1;
 }
 
+void Listener::parseMotorFbck(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
 
-// TODO
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Convert from parameters to SI values
+	int8_t temperatureParameter = frame.data[1];
+	int16_t torqueParameter = ((int16_t) frame.data[3] << 8) +
+							  ((int16_t) frame.data[2] );
+	int16_t speedParameter  = ((int16_t) frame.data[5] << 8) +
+							  ((int16_t) frame.data[4] );
+	int16_t angleParameter  = ((int16_t) frame.data[7] << 8) +
+							  ((int16_t) frame.data[6] );
+
+	const float torqueUnit = 0.01;
+	const float speedUnit = 1.0;
+	const float angleUnit = 1.0;
+
+	int temperature = (int) temperatureParameter;
+	float torque = torqueParameter * torqueUnit;
+	float speed = speedParameter * speedUnit;
+	float angle = angleParameter * angleUnit;
+
+	// Adjust to our custom coordinates and units
+	torque = -torque;
+	speed = -deg2rad(speed);
+	angle = -deg2rad(angle);
+
+	// Write the read data into the corresponding place
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->temperature = temperature;
+	m_motors[idx]->torque = torque;
+	m_motors[idx]->angle = angle;
+	m_motors[idx]->speed = speed;
+
+	// Set update flag
+	m_motors[idx]->fr_temperature = 1;
+	m_motors[idx]->fr_torque = 1;
+	m_motors[idx]->fr_angle = 1;
+	m_motors[idx]->fr_speed = 1;
+	m_motors[idx]->fr_fullFbck = 1;
+}
 
 
 void Listener::parsePhaseReport(can_frame frame)
@@ -997,49 +1097,4 @@ void Listener::parseModel(can_frame frame)
 
 	// Set update flag
 	m_motors[idx]->f_model = 1;
-}
-
-
-void Listener::parseMotorFbck(can_frame frame)
-{
-	// Extract the motor ID from the received frame
-	int id = frame.can_id - 0x240;
-
-	// Get the vector's index
-	int idx = getIndex(m_ids, id);
-
-	// Convert from parameters to SI values
-	int8_t temperatureParameter = frame.data[1];
-	int16_t torqueParameter = ( (int16_t) frame.data[3] << 8) 
-								+ ( (int16_t) frame.data[2] );
-	int16_t speedParameter = ( (int16_t) frame.data[5] << 8) 
-							+ ( (int16_t) frame.data[4] );
-	int16_t angleParameter = ( (int16_t) frame.data[7] << 8) 
-							+ ( (int16_t) frame.data[6] );
-
-	const float torqueUnit = 0.01;
-	const float speedUnit = 1.0;
-	const float angleUnit = 1.0;
-
-	int temperature = (int) temperatureParameter;
-	float torque = torqueParameter * torqueUnit;
-	float speed = speedParameter * speedUnit;
-	float angle = angleParameter * angleUnit;
-
-	// Adjust to our custom coordinates and units
-	torque = -torque;
-	speed = -deg2rad(speed);
-
-	// Write the read data into the corresponding place
-	scoped_lock lock(m_mutex);
-	m_motors[idx]->temperature = temperature;
-	m_motors[idx]->torque = torque;
-	m_motors[idx]->angle = angle;
-	m_motors[idx]->speed = speed;
-
-	// Set update flag
-	m_motors[idx]->f_temperature = 1;
-	m_motors[idx]->f_torque = 1;
-	m_motors[idx]->f_angle = 1;
-	m_motors[idx]->f_speed = 1;
 }
