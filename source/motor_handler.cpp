@@ -44,6 +44,9 @@ MotorHandler::MotorHandler(vector<int> ids, const char* can_bus)
     // Create the writer and the listener 
     m_writer = new Writer(m_motors, ids, s);
     m_listener = new Listener(m_motors, ids, s);
+
+    usleep(2*1000000);
+    pingMotors();
 }
 
 MotorHandler::~MotorHandler()
@@ -84,32 +87,23 @@ int MotorHandler::openSocket(const char* can_bus)
     return s;
 }
 
-// TIMEOUT???
+
 void MotorHandler::pingMotors()
 {
+    vector<string> models(m_nbrMotors);
+    bool success = getModel(m_ids, models);
+    
+    cout << endl;
     for (int i=0; i<m_nbrMotors; i++)
-        m_writer->requestModel(m_ids[i]);
-
-    for (int i=0; i<m_nbrMotors; i++) {
-        int id = m_ids[i];
-        bool hasResponded = 0;
-        char model[FRAME_LENGTH-1];
-
-        // Wait for the model update
-        while(hasResponded != 1)
-            m_listener->getModel(id, hasResponded, model);
-
-        if (hasResponded == 1) {
-            cout << "Motor " << id << " pinged successfully. Model: ";
-            for (int j=0; j<FRAME_LENGTH-1; j++)
-                cout << model[j];
-            cout << endl;
-        }
+    {
+        if (!models[i].empty())
+            cout << "Motor " << m_ids[i] << " pinged successfully! Model: " << models[i] << endl;
         else {
-            cout << "Error! Motor " << id << " is not responding" << endl;
+            cout << "Error! Motor " << m_ids[i] << " is not responding" << endl;
             exit(1);
-        }
+        }  
     }
+    cout << endl;
 }
 
 
@@ -119,7 +113,7 @@ void MotorHandler::pingMotors()
  ****************************************************************************/
 
 // --------- PID ----------- //
-bool MotorHandler::getPID(vector<int> ids, vector<PacketPID>& vecPID)
+bool MotorHandler::getPID(vector<int> ids, vector<PIDReport>& pidReports)
 {
     for (int i=0; i<ids.size(); i++) {
         if(m_writer->requestPID(ids[i]) < 0)
@@ -128,10 +122,10 @@ bool MotorHandler::getPID(vector<int> ids, vector<PacketPID>& vecPID)
 
     int fullSuccess = 0;
     for (int i=0; i<ids.size(); i++) {
-        PacketPID tempPacket;
+        PIDReport tempPacket;
         bool success = m_listener->getPID(ids[i], tempPacket);
         if (success)
-            vecPID[i] = tempPacket;
+            pidReports[i] = tempPacket;
         fullSuccess += success;
     }
 
@@ -142,16 +136,16 @@ bool MotorHandler::getPID(vector<int> ids, vector<PacketPID>& vecPID)
         return 0;
 }
 
-bool MotorHandler::getPID(vector<PacketPID>& vecPID)
+bool MotorHandler::getPID(vector<PIDReport>& pidReports)
 {
-    return(getPID(m_ids, vecPID));
+    return(getPID(m_ids, pidReports));
 }
 
 
-bool MotorHandler::writePID_RAM(vector<int> ids, vector<PacketPID> vecPID)
+bool MotorHandler::writePID_RAM(vector<int> ids, vector<PIDReport> pidReports)
 {
     for (int i=0; i<ids.size(); i++) {
-        if(m_writer->writePID_RAM(ids[i], vecPID[i]) < 0)
+        if(m_writer->writePID_RAM(ids[i], pidReports[i]) < 0)
             cout << "[FAILED REQUEST] Failed to send PID-writing to RAM for motor " << ids[i] << endl;
     }
 
@@ -168,15 +162,15 @@ bool MotorHandler::writePID_RAM(vector<int> ids, vector<PacketPID> vecPID)
         return 0;    
 }
 
-bool MotorHandler::writePID_RAM(vector<PacketPID> vecPID)
+bool MotorHandler::writePID_RAM(vector<PIDReport> pidReports)
 {
-    return(writePID_RAM(m_ids, vecPID));
+    return(writePID_RAM(m_ids, pidReports));
 }
 
-bool MotorHandler::writePID_EEPROM(vector<int> ids, vector<PacketPID> vecPID)
+bool MotorHandler::writePID_EEPROM(vector<int> ids, vector<PIDReport> pidReports)
 {
     for (int i=0; i<ids.size(); i++) {
-        if(m_writer->writePID_EEPROM(ids[i], vecPID[i]) < 0)
+        if(m_writer->writePID_EEPROM(ids[i], pidReports[i]) < 0)
             cout << "[FAILED REQUEST] Failed to send PID-writing to EEPROM for motor " << ids[i] << endl;
     }
 
@@ -195,9 +189,9 @@ bool MotorHandler::writePID_EEPROM(vector<int> ids, vector<PacketPID> vecPID)
     //RESET MOTORS???
 }
 
-bool MotorHandler::writePID_EEPROM(vector<PacketPID> vecPID)
+bool MotorHandler::writePID_EEPROM(vector<PIDReport> pidReports)
 {
-    return(writePID_EEPROM(m_ids, vecPID));
+    return(writePID_EEPROM(m_ids, pidReports));
 }
 
 
@@ -391,23 +385,182 @@ bool MotorHandler::lockBrake()
 }
 
 
+// --------- Acc settings  ----------- //
 
-
-
-
-
-
-void MotorHandler::writeTorque(vector<float> torques) 
+bool MotorHandler::getErrorReport(vector<int> ids, vector<ErrorReport>& errorReports)
 {
-    writeTorque(m_ids, torques);
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestErrorReport(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send error report request for motor " << ids[i] << endl;
+    }    
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        ErrorReport temp;
+        bool success = m_listener->getErrorReport(ids[i], temp);
+        if (success)
+            errorReports[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;                
+} 
+
+bool MotorHandler::getErrorReport(vector<ErrorReport>& errorReports)
+{
+    return(getErrorReport(m_ids, errorReports));
+}
+
+// todo
+
+bool MotorHandler::getPhaseReport(vector<int> ids, vector<PhaseReport>& phaseReports)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestPhaseReport(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send phase report request for motor " << ids[i] << endl;
+    }    
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        PhaseReport temp;
+        bool success = m_listener->getPhaseReport(ids[i], temp);
+        if (success)
+            phaseReports[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;                
+} 
+
+bool MotorHandler::getPhaseReport(vector<PhaseReport>& phaseReports)
+{
+    return(getPhaseReport(m_ids, phaseReports));
 }
 
 
-void MotorHandler::writeTorque(vector<int> ids, vector<float> torques) 
+// ----------  Commands ----------- //
+
+bool MotorHandler::writeTorque(vector<int> ids, vector<float> torques) 
 {
-    for (int i=0; i<ids.size(); i++)
-        m_writer->writeTorque(ids[i], torques[i]);
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writeTorque(ids[i], torques[0]) < 0)
+            cout << "[FAILED REQUEST] Failed to send torque command to motor " << ids[i] << endl;
+    }    
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->torque_command_received(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
 }
+
+bool MotorHandler::writeTorque(vector<float> torques) 
+{
+    return(writeTorque(m_ids, torques));
+}
+
+
+bool MotorHandler::writeSpeed(vector<int> ids, vector<float> speeds) 
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writeSpeed(ids[i], speeds[0]) < 0)
+            cout << "[FAILED REQUEST] Failed to send speed command to motor " << ids[i] << endl;
+    } 
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->speedWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+
+bool MotorHandler::writeSpeed(vector<float> speeds) 
+{
+    return(writeSpeed(m_ids, speeds));
+}
+
+bool MotorHandler::writeMotion(vector<int> ids, vector<float> pos, vector<float> speeds,
+                 vector<float> Kps, vector<float> Kds, vector<float> Tff)
+{
+     for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writeMotionMode(ids[i], pos[i], speeds[i], Kps[i], Kds[i], Tff[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send motion command to motor " << ids[i] << endl;
+    } 
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->motion_written(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::writeMotion(vector<float> pos, vector<float> speeds,
+                 vector<float> Kps, vector<float> Kds, vector<float> Tffs)
+{
+    return(writeMotion(m_ids, pos, speeds, Kps, Kds, Tffs));
+}
+
+
+// ----------  Motor info ----------- //
+
+bool MotorHandler::getModel(vector<int> ids, vector<std::string>& models)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestModel(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send model request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->getModel(ids[i], models[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;      
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 void MotorHandler::getTorqueFbck(vector<float>& torqueFbck)
 {
@@ -421,21 +574,6 @@ void MotorHandler::getTorqueFbck(vector<int> ids, vector<float>& torqueFbck)
 
     for (int i=0; i<ids.size(); i++)
         torqueFbck[i] = m_listener->getTorque(ids[i]);
-}
-
-void MotorHandler::writeSpeed(vector<float> speeds) 
-{
-    writeSpeed(m_ids, speeds);
-
-    for (int i=0; i<m_ids.size(); i++)
-        bool done = m_listener->speedWritten(m_ids[i]);
-}
-
-
-void MotorHandler::writeSpeed(vector<int> ids, vector<float> speeds) 
-{
-    for (int i=0; i<ids.size(); i++)
-        m_writer->writeSpeed(ids[i], speeds[i]);
 }
 
 void MotorHandler::getSpeedFbck(vector<float>& speedFbck)

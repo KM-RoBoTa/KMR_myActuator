@@ -32,10 +32,8 @@ public:
     Listener(std::vector<Motor*> motors, std::vector<int> ids, int s);
     ~Listener();
 
-    void getModel(int id, bool& hasResponded, char model[]);
-
     // --------- PID ----------- //
-    bool getPID(int id, PacketPID& packetPID);
+    bool getPID(int id, PIDReport& pidReport);
     bool PID_written_RAM(int id);
     bool PID_written_EEPROM(int id);
 
@@ -49,13 +47,26 @@ public:
     bool brake_release_received(int id);
     bool brake_lock_received(int id);
 
+    // ---- Status and errors ---- //
+    bool getErrorReport(int id, ErrorReport& errorReport);
+    // todo
+    bool getPhaseReport(int id, PhaseReport& phaseReport);
+
+    // ---- Commands ---- //
+    bool torque_command_received(int id);
+    bool speedWritten(int id);
+    bool motion_written(int id);
+
+    // ---- Motor info ---- //
+    bool getModel(int id, std::string& model);
+
     // Status fbck
     float getTorque(int id);
     float getSpeed(int id);
     float getAngle(int id);
     float getTemperature(int id);
     
-    bool speedWritten(int id);
+
 
 
 
@@ -86,12 +97,20 @@ private:
     void parseBrakeRelease(can_frame frame);
     void parseBrakeLock(can_frame frame);
 
+    // ---- Status and errors ---- //
+    void parseErrorReport(can_frame frame);
+    // todo
+    void parsePhaseReport(can_frame frame);
 
-    void readModel(can_frame frame);
-
-    // PARSE SPEED
+    // ---- Commands ---- //
     void parseTorqueCommand(can_frame frame);
     void parseSpeedCommand(can_frame frame);
+    void parseMotionModeCommand(can_frame frame);
+
+    // ---- Motor info ---- //
+    void parseModel(can_frame frame);
+
+
 
     // Status fbck
     void parseMotorFbck(can_frame frame);

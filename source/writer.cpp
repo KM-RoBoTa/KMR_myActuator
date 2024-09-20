@@ -14,6 +14,7 @@
 #include <linux/can.h>
 #include <iostream>
 #include <unistd.h>
+#include <cmath>
 
 #include "writer.hpp"
 
@@ -68,19 +69,19 @@ int Writer::requestPID(int id)
 }
 
 
-int Writer::writePID_RAM(int id, PacketPID packetPID)
+int Writer::writePID_RAM(int id, PIDReport pidReport)
 {
     struct can_frame frame;
     frame.can_id = 0x140 + id;
     frame.len = FRAME_LENGTH;
     frame.data[0] = 0x31;
     frame.data[1] = 0x00;
-    frame.data[2] = (int8_t) packetPID.Kp_torque;
-    frame.data[3] = (int8_t) packetPID.Ki_torque;
-    frame.data[4] = (int8_t) packetPID.Kp_speed;
-    frame.data[5] = (int8_t) packetPID.Ki_speed;
-    frame.data[6] = (int8_t) packetPID.Kp_pos;
-    frame.data[7] = (int8_t) packetPID.Ki_pos;
+    frame.data[2] = (int8_t) pidReport.Kp_torque;
+    frame.data[3] = (int8_t) pidReport.Ki_torque;
+    frame.data[4] = (int8_t) pidReport.Kp_speed;
+    frame.data[5] = (int8_t) pidReport.Ki_speed;
+    frame.data[6] = (int8_t) pidReport.Kp_pos;
+    frame.data[7] = (int8_t) pidReport.Ki_pos;
 
     // Send frame
     int nbytes = -1;
@@ -90,19 +91,19 @@ int Writer::writePID_RAM(int id, PacketPID packetPID)
 }
 
 
-int Writer::writePID_EEPROM(int id, PacketPID packetPID)
+int Writer::writePID_EEPROM(int id, PIDReport pidReport)
 {
     struct can_frame frame;
     frame.can_id = 0x140 + id;
     frame.len = FRAME_LENGTH;
     frame.data[0] = 0x32;
     frame.data[1] = 0x00;
-    frame.data[2] = (int8_t) packetPID.Kp_torque;
-    frame.data[3] = (int8_t) packetPID.Ki_torque;
-    frame.data[4] = (int8_t) packetPID.Kp_speed;
-    frame.data[5] = (int8_t) packetPID.Ki_speed;
-    frame.data[6] = (int8_t) packetPID.Kp_pos;
-    frame.data[7] = (int8_t) packetPID.Ki_pos;
+    frame.data[2] = (int8_t) pidReport.Kp_torque;
+    frame.data[3] = (int8_t) pidReport.Ki_torque;
+    frame.data[4] = (int8_t) pidReport.Kp_speed;
+    frame.data[5] = (int8_t) pidReport.Ki_speed;
+    frame.data[6] = (int8_t) pidReport.Kp_pos;
+    frame.data[7] = (int8_t) pidReport.Ki_pos;
 
     // Send frame
     int nbytes = -1;
@@ -315,19 +316,14 @@ int Writer::requestBrakeLock(int id)
 }
 
 
+// --------- Status and errors ----------- //
 
-
-
-
-
-
-
-int Writer::requestModel(int id)
+int Writer::requestErrorReport(int id)
 {
     struct can_frame frame;
     frame.can_id = 0x140 + id;
     frame.len = FRAME_LENGTH;
-    frame.data[0] = 0xB5;
+    frame.data[0] = 0x9A;
     frame.data[1] = 0x00;
     frame.data[2] = 0x00;
     frame.data[3] = 0x00;
@@ -337,16 +333,55 @@ int Writer::requestModel(int id)
     frame.data[7] = 0x00;
 
     // Send frame
-    int nbytes = write(m_s, &frame, sizeof(can_frame));
-
-    if (nbytes >= 0)
-        cout << "Get model sent" << endl;
-    else
-        cout << "Problem with getting model" << endl;
-
-    //return nbytes;   
-    return 1;
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;  
 }
+
+int Writer::requestMotorFbck(int id)
+{   
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x9C;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+
+    return nbytes;
+}   
+
+int Writer::requestPhaseReport(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x9D;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;  
+}
+
+// --------- Commands ----------- //
 
 int Writer::writeTorque(int id, float torque)
 {
@@ -384,6 +419,7 @@ int Writer::writeTorque(int id, float torque)
     return nbytes;    
 }
 
+
 int Writer::writeSpeed(int id, float speed)
 {
     // Adjust units and coordinates
@@ -420,12 +456,62 @@ int Writer::writeSpeed(int id, float speed)
     return nbytes;   
 }
 
-int Writer::requestMotorFbck(int id)
-{   
+int Writer::writeMotionMode(int id, float pos, float speed, float Kp, float Kd, float Tff)
+{
+    // Convert the required values
+    pos = -pos;
+    speed = -speed;
+    Tff = -Tff;
+
+    // Saturate the values between accepted intervals
+    const float minPos = -12.5, maxPos = 12.5;
+    const float minSpeed = -45, maxSpeed = 45;
+    const float minKp = 0, maxKp = 500;
+    const float minKd = 0, maxKd = 5;
+    const float minTff = -24, maxTff = 24; 
+
+    pos = saturate(minPos, maxPos, pos);
+    speed = saturate(minSpeed, maxSpeed, speed);
+    Kp = saturate(minKp, maxKp, Kp);
+    Kd = saturate(minKd, maxKd, Kd);
+    Tff = saturate(minTff, maxTff, Tff);
+
+    // Create the packet
+    int32_t posParameter = (pos - minPos)*(pow(2,16)-1)/(maxPos - minPos);
+    int32_t speedParameter = (speed - minSpeed)*(pow(2,12)-1)/(maxSpeed - minSpeed);
+    int32_t KpParameter = (Kp - minKp)*(pow(2,12)-1)/(maxKp - minKp);
+    int32_t KdParameter = (Kd - minKd)*(pow(2,12)-1)/(maxKd - minKd);
+    int32_t TffParameter = (Tff - minTff)*(pow(2,12)-1)/(maxTff - minTff);
+
+    struct can_frame frame;
+    frame.can_id = 0x400 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = (int8_t) (posParameter >> 8); 
+    frame.data[1] = (int8_t) posParameter;
+    frame.data[2] = (int8_t) (speedParameter >> 4);
+    frame.data[3] = ( ((int8_t) speedParameter) << 4) | ( (int8_t) (KpParameter >> 8));
+    frame.data[4] = (int8_t) KpParameter;
+    frame.data[5] = (int8_t) (KdParameter >> 4);
+    frame.data[6] = ( ((int8_t) KdParameter) << 4) | ( (int8_t) (TffParameter >> 8));
+    frame.data[7] = (int8_t) TffParameter;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;   
+}
+
+
+
+// --------- Motor infos ----------- //
+
+int Writer::requestModel(int id)
+{
     struct can_frame frame;
     frame.can_id = 0x140 + id;
-    frame.len = FRAME_LENGTH;          // 8 bytes
-    frame.data[0] = 0x9C;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0xB5;
     frame.data[1] = 0x00;
     frame.data[2] = 0x00;
     frame.data[3] = 0x00;
@@ -437,7 +523,6 @@ int Writer::requestMotorFbck(int id)
     // Send frame
     int nbytes = -1;
     nbytes = write(m_s, &frame, sizeof(can_frame));
-
-    return nbytes;
-}   
-
+ 
+    return nbytes;   
+}

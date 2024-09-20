@@ -31,12 +31,12 @@ public:
     void pingMotors();
 
     // --------- PID ----------- //
-    bool getPID(std::vector<int> ids, std::vector<PacketPID>& vecPID);
-    bool getPID(std::vector<PacketPID>& vecPID);
-    bool writePID_RAM(std::vector<int> ids, std::vector<PacketPID> vecPID);
-    bool writePID_RAM(std::vector<PacketPID> vecPID);
-    bool writePID_EEPROM(std::vector<int> ids, std::vector<PacketPID> vecPID);
-    bool writePID_EEPROM(std::vector<PacketPID> vecPID);
+    bool getPID(std::vector<int> ids, std::vector<PIDReport>& pidReports);
+    bool getPID(std::vector<PIDReport>& pidReports);
+    bool writePID_RAM(std::vector<int> ids, std::vector<PIDReport> pidReports);
+    bool writePID_RAM(std::vector<PIDReport> pidReports);
+    bool writePID_EEPROM(std::vector<int> ids, std::vector<PIDReport> pidReports);
+    bool writePID_EEPROM(std::vector<PIDReport> pidReports);
 
     // --------- Acc settings  ----------- //
     bool getAccelerationSettings(std::vector<int> ids, ACC_SETTINGS setting, std::vector<int>& accs);
@@ -56,18 +56,38 @@ public:
     bool lockBrake(std::vector<int> ids);     
     bool lockBrake();  
 
+    // --------- Status and errors  ----------- //
+    bool getErrorReport(std::vector<int> ids, std::vector<ErrorReport>& errorReports);
+    bool getErrorReport(std::vector<ErrorReport>& errorReports);
+    // todo
+    bool getPhaseReport(std::vector<int> ids, std::vector<PhaseReport>& phaseReports);
+    bool getPhaseReport(std::vector<PhaseReport>& phaseReports);
+
+    // ----------  Commands ----------- //
+    bool writeTorque(std::vector<int> ids, std::vector<float> torques);
+    bool writeTorque(std::vector<float> torques);
+    bool writeSpeed(std::vector<int> ids, std::vector<float> speeds);
+    bool writeSpeed(std::vector<float> speeds);
+    bool writeMotion(std::vector<int> ids, std::vector<float> pos, std::vector<float> speeds,
+                    std::vector<float> Kps, std::vector<float> Kds, std::vector<float> Tff);
+    bool writeMotion(std::vector<float> pos, std::vector<float> speeds,
+                    std::vector<float> Kps, std::vector<float> Kds, std::vector<float> Tff);
+
+    // ----------  Motor info ----------- //
+    bool getModel(std::vector<int> ids, std::vector<std::string>& models);
+
+
+
+
     // Mode command
-    void writeTorque(std::vector<int> ids, std::vector<float> torques);
-    void writeTorque(std::vector<float> torques);
     void getTorqueFbck(std::vector<int> ids, std::vector<float>& torqueFbck);
     void getTorqueFbck(std::vector<float>& torqueFbck);
-    void writeSpeed(std::vector<float> speeds);
-    void writeSpeed(std::vector<int> ids, std::vector<float> speeds);
+
     void getSpeedFbck(std::vector<float>& speedFbck);
     void getSpeedFbck(std::vector<int> ids, std::vector<float>& speedFbck);
 
 
-    int getModel(int i);
+
 
 private:
     Listener* m_listener = nullptr;

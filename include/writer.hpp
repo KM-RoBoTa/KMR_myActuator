@@ -28,8 +28,8 @@ public:
 
     // PID settings
     int requestPID(int id);                             // 0x30
-    int writePID_RAM(int id, PacketPID packetPID);      // 0x31
-    int writePID_EEPROM(int id, PacketPID packetPID);   // 0x32
+    int writePID_RAM(int id, PIDReport pidReport);      // 0x31
+    int writePID_EEPROM(int id, PIDReport pidReport);   // 0x32
 
     // Acceleration settings
     int requestAccSettings(int id, ACC_SETTINGS setting);           // 0x42
@@ -42,11 +42,24 @@ public:
     int requestBrakeRelease(int id);    // 0x77
     int requestBrakeLock(int id);       // 0x78
 
+    // Status and errors
+    int requestErrorReport(int id);     // 0x9A
+    int requestMotorFbck(int id);       // 0x9C
+    int requestPhaseReport(int id);     // 0x9D
+
+    // Commands
+    int writeTorque(int id, float torque);  // 0xA1
+    int writeSpeed(int id, float speed);    // 0xA2
+    int writeMotionMode(int id, float pos, float speed, float Kp, float Kd, float Tff); // 0x400
+    // !!!!!!!!!!!!!!!!! Very specific case !!!!!!!!!!!!!!¨
+
     // Motor infos
-    int requestModel(int id);
-    int writeTorque(int id, float torque);
-    int writeSpeed(int id, float speed);
-    int requestMotorFbck(int id);
+    int requestModel(int id);   // 0xB5
+
+    // Commands
+
+
+
 
 
 

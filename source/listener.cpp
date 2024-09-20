@@ -100,11 +100,23 @@ int Listener::listenerLoop(int s)
 			case 0x77:	parseBrakeRelease(frame); break;
 			case 0x78:	parseBrakeLock(frame); break;
 
-			case 0xB5: 	readModel(frame);	break;
+			case 0x9A:	parseErrorReport(frame); break;
+			case 0x9C:	parseMotorFbck(frame); break;
+			case 0x9D:	parsePhaseReport(frame); break;
+
 			case 0xA1:	parseTorqueCommand(frame); break;
 			case 0xA2: 	parseSpeedCommand(frame); break;
-			case 0x9C:	parseMotorFbck(frame); break;
-			default: cout << "Unknown function" ; break;
+			case 0x500:	parseMotionModeCommand(frame); break;
+
+			case 0xB5: 	parseModel(frame);	break;
+
+
+			default:
+				if (frame.can_id == 0x501) 
+					parseMotionModeCommand(frame);
+				else
+					cout << "Unknown function" << endl; 
+				break;
 			}
         }
 
@@ -127,7 +139,7 @@ int Listener::listenerLoop(int s)
 
 // --------- PID ----------- //
 
-bool Listener::getPID(int id, PacketPID& packetPID)
+bool Listener::getPID(int id, PIDReport& pidReport)
 {
 	int idx = getIndex(m_ids, id);
 	bool available = 0;
@@ -144,15 +156,10 @@ bool Listener::getPID(int id, PacketPID& packetPID)
 
 		scoped_lock lock(m_mutex);
 		available = m_motors[idx]->fr_PID;
-		packetPID.Kp_torque = m_motors[idx]->Kp_torque;
-		packetPID.Ki_torque = m_motors[idx]->Ki_torque;
-		packetPID.Kp_speed = m_motors[idx]->Kp_speed;
-		packetPID.Ki_speed = m_motors[idx]->Ki_speed;
-		packetPID.Kp_pos = m_motors[idx]->Kp_pos;
-		packetPID.Ki_pos = m_motors[idx]->Ki_pos;
+		pidReport = m_motors[idx]->pidReport;
 
 		// Clear update flag
-		m_motors[idx]->fr_PID = 0;void parseShutdown(can_frame frame);
+		m_motors[idx]->fr_PID = 0;
 	}
 
 	return available;	
@@ -406,16 +413,104 @@ bool Listener::brake_lock_received(int id)
 }
 
 
+// --------- Status and errors ----------- //
 
+bool Listener::getErrorReport(int id, ErrorReport& errorReport)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
 
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The error report of motor " << id << " timed out!" << endl;
+			break;
+		}		
 
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_errorReport;
+		errorReport = m_motors[idx]->errorReport;
+
+		// Clear update flag
+		m_motors[idx]->f_errorReport = 0;
+	}
+
+	return available;	
+}
+
+// todo
+
+bool Listener::getPhaseReport(int id, PhaseReport& phaseReport)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;	
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] The phase report of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_phaseReport;
+		phaseReport = m_motors[idx]->phaseReport;
+
+		// Clear update flag
+		m_motors[idx]->f_phaseReport = 0;
+	}
+
+	return available;	
+}
+
+// --------- Commands ----------- //
+
+bool Listener::torque_command_received(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Torque command acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_torque;
+
+		// Clear update flag
+		m_motors[idx]->fw_torque = 0;
+	}
+
+	return available;		
+}
 
 bool Listener::speedWritten(int id)
 {
 	int idx = getIndex(m_ids, id);
 	bool available = 0;
 
+	timespec start = time_s();
 	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Speed command acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
 		scoped_lock lock(m_mutex);
 		available = m_motors[idx]->fw_speed;
 
@@ -426,20 +521,71 @@ bool Listener::speedWritten(int id)
 	return available;		
 }
 
-
-void Listener::getModel(int id, bool& hasResponded, char model[])
+bool Listener::motion_written(int id)
 {
 	int idx = getIndex(m_ids, id);
+	bool available = 0;
 
-	scoped_lock lock(m_mutex);
-	hasResponded = m_motors[idx]->f_model;
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Motion command acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
 
-	for (int i=0; i<FRAME_LENGTH-1; i++)
-		model[i] = m_motors[idx]->model[i];
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_motion;
 
-	// Clear update flag
-	m_motors[idx]->f_model = 0;
+		// Clear update flag
+		m_motors[idx]->fw_motion = 0;
+	}
+
+	return available;	
 }
+
+// --------- Motor info ----------- //
+
+bool Listener::getModel(int id, string& model)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the model of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->f_model;
+		model = m_motors[idx]->model;
+
+		// Clear update flag and the saved string in case the getModel function gets recalled
+		m_motors[idx]->f_model = 0;
+		m_motors[idx]->model.clear();
+	}
+
+	return available;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 float Listener::getTorque(int id)
 {
@@ -528,14 +674,17 @@ void Listener::parsePIDFbck(can_frame frame)
 	// Get the vector's index
 	int idx = getIndex(m_ids, id);
 
+	PIDReport pidReport;
+	pidReport.Kp_torque = frame.data[2];
+	pidReport.Ki_torque = frame.data[3];
+	pidReport.Kp_speed = frame.data[4];
+	pidReport.Ki_speed = frame.data[5];
+	pidReport.Kp_pos = frame.data[6];
+	pidReport.Ki_pos = frame.data[7];
+
 	// Write the read data into the corresponding place
 	scoped_lock lock(m_mutex);
-	m_motors[idx]->Kp_torque = frame.data[2];
-	m_motors[idx]->Ki_torque = frame.data[3];
-	m_motors[idx]->Kp_speed = frame.data[4];
-	m_motors[idx]->Ki_speed = frame.data[5];
-	m_motors[idx]->Kp_pos = frame.data[6];
-	m_motors[idx]->Ki_pos = frame.data[7];
+	m_motors[idx]->pidReport = pidReport;
 
 	// Set update flag
 	m_motors[idx]->fr_PID = 1;
@@ -705,69 +854,102 @@ void Listener::parseBrakeLock(can_frame frame)
 	m_motors[idx]->f_brake = 1;	
 }
 
+// --------- Status and errors ----------- //
 
-
-
-
-
-
-
-
-void Listener::readModel(can_frame frame)
+void Listener::parseErrorReport(can_frame frame)
 {
 	// Extract the motor ID from the received frame
 	int id = frame.can_id - 0x240;
 
 	// Get the vector's index
-	int idx = getIndex(m_ids, id);
+	int idx = getIndex(m_ids, id);	
 
-	// Write the read data into the corresponding place
+	// Analyze the data in the frame
+	int8_t temperatureParameter = frame.data[1];
+	int8_t brakeReleaseParameter = frame.data[3];
+	int16_t voltageParameter = ( (int16_t) frame.data[5] << 8) +
+							   ( (int16_t) frame.data[4] );
+	int16_t errorParameter = ( (int16_t) frame.data[7] << 8) +
+							 ( (int16_t) frame.data[6] );
+
+	const float unitsVoltage = 0.1;
+	ErrorReport errorReport;
+
+	errorReport.temperature = (int) temperatureParameter;
+	errorReport.brakeReleased = (int) brakeReleaseParameter;  // boolean-type
+	errorReport.voltage = voltageParameter * unitsVoltage;
+
+	// Parse the error
+	if ( (errorParameter & ERR_MOTOR_STALL) != 0)
+		errorReport.err_motorStall = 1;
+	if ( (errorParameter & ERR_UNDERVOLTAGE) != 0)
+		errorReport.err_undervoltage = 1;
+	if ( (errorParameter & ERR_OVERVOLTAGE) != 0)
+		errorReport.err_overvoltage = 1;
+	if ( (errorParameter & ERR_OVERCURRENT) != 0)
+		errorReport.err_overcurrent = 1;
+	if ( (errorParameter & ERR_POWER_OVERRUN) != 0)
+		errorReport.err_powerOverrun = 1;
+	if ( (errorParameter & ERR_CALIB_PARAM) != 0)
+		errorReport.err_calibParameter = 1;
+	if ( (errorParameter & ERR_SPEEDING) != 0)
+		errorReport.err_speeding = 1;
+	if ( (errorParameter & ERR_OVERHEATING) != 0)
+		errorReport.err_overheating = 1;
+	if ( (errorParameter & ERR_ENCODER_CALIB) != 0)
+		errorReport.err_encoderCalib = 1;
+
 	scoped_lock lock(m_mutex);
-	for (int i=1; i<FRAME_LENGTH; i++)
-		m_motors[idx]->model[i-1] = frame.data[i];
-
-	// Set update flag
-	m_motors[idx]->f_model = 1;
+	m_motors[idx]->errorReport = errorReport;
+	m_motors[idx]->f_errorReport = 1;
 }
 
-// 0xA1
+
+// TODO
+
+
+void Listener::parsePhaseReport(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Analyze data
+	int8_t temperatureParameter = frame.data[1];
+	int16_t phaseAParameter = ( (int16_t) frame.data[3] << 8) +
+                              ( (int16_t) frame.data[2] );
+	int16_t phaseBParameter = ( (int16_t) frame.data[5] << 8) +
+                              ( (int16_t) frame.data[4] );
+	int16_t phaseCParameter = ( (int16_t) frame.data[7] << 8) +
+                              ( (int16_t) frame.data[6] );
+
+	const float unitsPhase = 0.01;
+	PhaseReport phaseReport;
+	phaseReport.temperature = (int) temperatureParameter;
+	phaseReport.currentPhaseA = phaseAParameter * unitsPhase;
+	phaseReport.currentPhaseB = phaseBParameter * unitsPhase;
+	phaseReport.currentPhaseC = phaseCParameter * unitsPhase;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->phaseReport = phaseReport;
+	m_motors[idx]->f_phaseReport = 1;
+}
+
+// --------- Commands ----------- //
+
 void Listener::parseTorqueCommand(can_frame frame)
 {
 	// Extract the motor ID from the received frame
-	/*int id = frame.can_id - 0x240;
+	int id = frame.can_id - 0x240;
 
 	// Get the vector's index
-	int idx = getIndex(m_ids, id);
+	int idx = getIndex(m_ids, id);	
 
-	if (idx > 0) {
-
-		// Calculate SI values from the packet
-		int8_t temperatureParameter = frame.data[1];
-		int16_t torqueParameter = ( (int16_t) frame.data[3] << 8) +
-								  ( (int16_t) frame.data[2] );
-		int16_t speedParameter = ( (int16_t) frame.data[5] << 8) +
-							     ( (int16_t) frame.data[4] );
-		int16_t angleParameter = ( (int16_t) frame.data[7] << 8) +
-							     ( (int16_t) frame.data[6] );
-
-		const float torqueUnit = 0.01;
-		const float speedUnit = 1;
-		const float posUnit = 1;
-		int temperature = (int) temperatureParameter;
-		float torque = torqueParameter * torqueUnit;
-		float speed = speedParameter * speedUnit;
-		float angle = angleParameter * posUnit;
-
-		// Save the received values. TODO FROM HERE BELOW
-		scoped_lock lock(m_mutex);
-		for (int i=1; i<FRAME_LENGTH; i++)
-			m_motors[idx]->model[i-1] = frame.data[i];
-
-		// Set update flag
-		m_motors[idx]->f_model = 1;	
-	}
-	else
-		cout << "Error! Torque could not be read, unknown motor" << endl;*/
+	// Set up confirmation flag
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_torque = 1;	
 }
 
 void Listener::parseSpeedCommand(can_frame frame)
@@ -782,6 +964,41 @@ void Listener::parseSpeedCommand(can_frame frame)
 	scoped_lock lock(m_mutex);
 	m_motors[idx]->fw_speed = 1;			
 }
+
+void Listener::parseMotionModeCommand(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x500;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Set up confirmation flag
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_motion = 1;		
+}
+
+
+// --------- Motor info ----------- //
+
+void Listener::parseModel(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Write the read data into the corresponding place
+	scoped_lock lock(m_mutex);
+	for (int i=1; i<FRAME_LENGTH; i++)
+		//m_motors[idx]->model[i-1] = frame.data[i];
+		m_motors[idx]->model += frame.data[i];
+
+	// Set update flag
+	m_motors[idx]->f_model = 1;
+}
+
 
 void Listener::parseMotorFbck(can_frame frame)
 {
