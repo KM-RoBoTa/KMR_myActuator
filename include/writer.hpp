@@ -54,9 +54,32 @@ public:
     // !!!!!!!!!!!!!!!!! Very specific case !!!!!!!!!!!!!!¨
 
     // Motor infos
-    int requestModel(int id);   // 0xB5
+    int requestModel(int id);               // 0xB5
+    int requestOperatingMode(int id);       // 0x70
+    int requestPowerConsumption(int id);    // 0x71
+    int requestRuntime(int id);             // 0xB1
+    int requestSoftwareDate(int id);        // 0xB2
+    // !!!!!!!!!!!!!!!!! Weird numbers !!!!!!!!!!!!!!¨
 
-    // Commands
+    // Others settings
+    int enableCANFilter(int id);            // 0x20
+    int disableCANFilter(int id);            // 0x20
+
+    int requestClearMultiturn(int id);      // 0x20
+    int setMultiturnMode(int id);           // 0x20
+    int setSingleturnMode(int id);          // 0x20
+
+    int enableActiveErrorFbck(int id);  // 0x20
+    int disableActiveErrorFbck(int id);  // 0x20
+
+
+
+    // pos command stuff
+    // 0x20: clear multi turn value
+    // Many other 0x20 uses
+
+
+
 
 
 

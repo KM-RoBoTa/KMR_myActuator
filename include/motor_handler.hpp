@@ -85,6 +85,34 @@ public:
 
     // ----------  Motor info ----------- //
     bool getModel(std::vector<int> ids, std::vector<std::string>& models);
+    bool getModel(std::vector<std::string>& models);
+    bool getOperatingMode(std::vector<int> ids, std::vector<OperatingMode>& modes); 
+    bool getOperatingMode(std::vector<OperatingMode>& modes);
+    bool getPowerConsumption(std::vector<int> ids, std::vector<float>& powers);
+    bool getPowerConsumption(std::vector<float>& powers);
+    bool getRuntime(std::vector<int> ids, std::vector<float>& runtimes);
+    bool getRuntime(std::vector<float>& runtimes);   
+    bool getSoftwareDate(std::vector<int> ids, std::vector<int>& dates);
+    bool getSoftwareDate(std::vector<int>& dates);   
+
+    // ----------  Other settings ----------- //
+    bool enableCANFilter(std::vector<int> ids);
+    bool enableCANFilter();
+    bool disableCANFilter(std::vector<int> ids);
+    bool disableCANFilter();
+
+    bool resetMultiturnCounter(std::vector<int> ids);
+    bool resetMultiturnCounter();
+
+    bool enableActiveErrorFbck(std::vector<int> ids);
+    bool enableActiveErrorFbck();
+    bool disableActiveErrorFbck(std::vector<int> ids);
+    bool disableActiveErrorFbck();
+
+    bool setMultiturnMode(std::vector<int> ids);
+    bool setMultiturnMode();
+    bool setSingleturnMode(std::vector<int> ids);
+    bool setSingleturnMode();
 
 
 private:

@@ -69,6 +69,11 @@ struct StatusReport {
 };
 
 
+enum OperatingMode {
+    TORQUE_LOOP, SPEED_LOOP, POSITION_LOOP
+};
+
+
 /**
  * @brief   Structure saving the info of a data field
  */
@@ -89,8 +94,12 @@ struct Motor {
     int speedDec = 174;
 
     ErrorReport errorReport;
-    // todo
     PhaseReport phaseReport;
+
+    OperatingMode operatingMode;
+    float power; // W
+    float runtime; // s
+    int softwareDate;
 
     // Update flags
     bool f_model = 0;
@@ -125,7 +134,15 @@ struct Motor {
     bool fw_speed = 0;
     bool fw_motion = 0;
 
+    bool fr_mode = 0;
+    bool fr_power = 0;
+    bool fr_runtime = 0;
+    bool fr_softwareDate;
 
+    bool fw_CANFilter = 0;
+    bool fw_multiturnReset = 0;
+    bool fw_multiturnMode = 0;
+    bool fw_activeErrorFbck = 0;
 
     // Constructor
     Motor(int id)

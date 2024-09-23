@@ -64,7 +64,17 @@ public:
 
     // ---- Motor info ---- //
     bool getModel(int id, std::string& model);
-    
+    bool getOperatingMode(int id, OperatingMode& mode);
+    bool getPowerConsumption(int id, float& power);
+    bool getRuntime(int id, float& runtime);
+    bool getSoftwareDate(int id, int& date);
+
+    // ---- Other settings ---- //
+    bool canFilterWritten(int id);
+    bool multiturnResetWritten(int id);
+    bool multiturnModeWritten(int id);
+    bool activeErrorFbckWritten(int id);
+
 
 
 
@@ -108,6 +118,17 @@ private:
 
     // ---- Motor info ---- //
     void parseModel(can_frame frame);
+    void parseOperatingMode(can_frame frame);
+    void parsePowerConsumption(can_frame frame);
+    void parseRuntime(can_frame frame);
+    void parseSoftwareDate(can_frame frame);
+
+    // ---- Other settings ---- //
+    void parseCompoundFct(can_frame frame);
+    void parseCANFilter(can_frame frame);
+    void parseMultiturnReset(can_frame frame);
+    void parseMultiturnMode(can_frame frame);
+    void parseActiveError(can_frame frame);
 
 };
 

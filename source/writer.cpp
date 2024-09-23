@@ -526,3 +526,236 @@ int Writer::requestModel(int id)
  
     return nbytes;   
 }
+
+int Writer::requestOperatingMode(int id) 
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x70;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;       
+}
+
+int Writer::requestPowerConsumption(int id) 
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x71;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;
+}
+
+int Writer::requestRuntime(int id) 
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0xB1;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;
+}
+
+int Writer::requestSoftwareDate(int id) 
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0xB2;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;
+}
+
+int Writer::enableCANFilter(int id) 
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x02; // CAN filter mode
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 1;    // enable
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;
+}
+
+int Writer::disableCANFilter(int id) 
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x02; // CAN filter mode
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0;    // disable
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;
+}
+
+
+// NEED TO RESTART. Resets multiturn, updates 0 and saves to EEPROM
+int Writer::requestClearMultiturn(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x01; // Clear multiturn value
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::enableActiveErrorFbck(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x03; // Active error status function
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 1;      // Enable
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::disableActiveErrorFbck(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x03; // Active error status function
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0;      // Disable
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::setMultiturnMode(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x04; // Single vs multi turn function
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 1;      // Multiturn enabled
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;   
+}
+
+int Writer::setSingleturnMode(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x20;
+    frame.data[1] = 0x04; // Single vs multi turn function
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0;      // Multiturn disabled (= singleturn only)
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;   
+}

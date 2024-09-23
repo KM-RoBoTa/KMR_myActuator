@@ -109,6 +109,12 @@ int Listener::listenerLoop(int s)
 			case 0x500:	parseMotionModeCommand(frame); break;
 
 			case 0xB5: 	parseModel(frame);	break;
+			case 0x70:	parseOperatingMode(frame); break;
+			case 0x71:	parsePowerConsumption(frame); break;
+			case 0xB1:	parseRuntime(frame); break;
+			case 0xB2:	parseSoftwareDate(frame); break;
+
+			case 0x20: 	parseCompoundFct(frame); break;
 
 
 			default:
@@ -709,6 +715,216 @@ bool Listener::getModel(int id, string& model)
 }
 
 
+bool Listener::getOperatingMode(int id, OperatingMode& mode)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the operating mode of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_mode;
+		mode = m_motors[idx]->operatingMode;
+
+		// Clear update flag and the saved string in case the getModel function gets recalled
+		m_motors[idx]->fr_mode = 0;
+	}
+
+	return available;	
+}
+
+
+bool Listener::getPowerConsumption(int id, float& power)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the power consumption of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_power;
+		power = m_motors[idx]->power;
+
+		// Clear update flag and the saved string in case the getModel function gets recalled
+		m_motors[idx]->fr_power = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::getRuntime(int id, float& runtime)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the runtime of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_runtime;
+		runtime = m_motors[idx]->runtime;
+
+		// Clear update flag and the saved string in case the getModel function gets recalled
+		m_motors[idx]->fr_runtime = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::getSoftwareDate(int id, int& date)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the software date of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_softwareDate;
+		date = m_motors[idx]->softwareDate;
+
+		// Clear update flag and the saved string in case the getModel function gets recalled
+		m_motors[idx]->fr_softwareDate = 0;
+	}
+
+	return available;	
+}
+
+// ---- Other settings ---- //
+
+
+bool Listener::canFilterWritten(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] CAN filter acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_CANFilter;
+
+		// Clear update flag
+		m_motors[idx]->fw_CANFilter = 0;
+	}
+
+	return available;		
+}
+
+
+bool Listener::multiturnResetWritten(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Multiturn reset acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_multiturnReset;
+
+		// Clear update flag
+		m_motors[idx]->fw_multiturnReset = 0;
+	}
+
+	return available;		
+}
+
+bool Listener::activeErrorFbckWritten(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Active error status acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_activeErrorFbck;
+
+		// Clear update flag
+		m_motors[idx]->fw_activeErrorFbck = 0;
+	}
+
+	return available;		
+}
+
+bool Listener::multiturnModeWritten(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Multiturn mode change acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_multiturnMode;
+
+		// Clear update flag
+		m_motors[idx]->fw_multiturnMode = 0;
+	}
+
+	return available;		
+}
+
+
 
 
 
@@ -1092,9 +1308,175 @@ void Listener::parseModel(can_frame frame)
 	// Write the read data into the corresponding place
 	scoped_lock lock(m_mutex);
 	for (int i=1; i<FRAME_LENGTH; i++)
-		//m_motors[idx]->model[i-1] = frame.data[i];
 		m_motors[idx]->model += frame.data[i];
 
 	// Set update flag
 	m_motors[idx]->f_model = 1;
+}
+
+void Listener::parseOperatingMode(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Parse
+	OperatingMode mode;
+	switch (frame.data[7])
+	{
+	case 0x01:
+		mode = TORQUE_LOOP;
+		break;
+	case 0x02:
+		mode = SPEED_LOOP;
+		break;
+	case 0x03:
+		mode = POSITION_LOOP;
+		break;
+	default:
+		cout << "Operating mode unknown! Exiting" << endl;
+		exit(1);
+		break;
+	}
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->operatingMode = mode;
+	m_motors[idx]->fr_mode = 1;
+}
+
+void Listener::parsePowerConsumption(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Parse
+	const float unitsPower = 0.1;
+	int16_t powerParameter = ( (int16_t) frame.data[7] << 8) +
+							 ( (int16_t) frame.data[6] );
+
+	float power = powerParameter * unitsPower;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->power = power;
+	m_motors[idx]->fr_power = 1;
+}
+
+void Listener::parseRuntime(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Parse
+	int32_t runtimeParameter = ( (int32_t) frame.data[7] << 24) +
+                               ( (int32_t) frame.data[6] << 16) +
+                               ( (int32_t) frame.data[5] <<  8) +
+                               ( (int32_t) frame.data[4]      );
+	int runtime_ms = (int) runtimeParameter;  // ms
+	float runtime = (float)runtime_ms / 1000.0;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->runtime = runtime;
+	m_motors[idx]->fr_runtime = 1;
+}
+
+void Listener::parseSoftwareDate(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	// Parse
+	int32_t dateParameter = ( (int32_t) frame.data[7] << 24) +
+							( (int32_t) frame.data[6] << 16) +
+							( (int32_t) frame.data[5] <<  8) +
+							( (int32_t) frame.data[4]      );
+	int date = (int) dateParameter;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->softwareDate = date;
+	m_motors[idx]->fr_softwareDate = 1;
+}
+
+
+// --------------------- Other settings ------------------- //
+
+void Listener::parseCompoundFct(can_frame frame)
+{
+	switch (frame.data[1])
+	{
+	case 0x01:
+		parseMultiturnReset(frame);
+		break;
+	case 0x02:
+		parseCANFilter(frame);
+		break;
+	case 0x03:
+		parseActiveError(frame);
+		break;
+	case 0x04:
+		parseMultiturnMode(frame);
+		break;
+	default:
+		cout << "Error! Unknown function in compound 0x20. Exiting" << endl;
+		exit(1);
+		break;
+	}
+}
+
+void Listener::parseMultiturnReset(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_multiturnReset = 1;
+}
+
+void Listener::parseCANFilter(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_CANFilter = 1;
+}
+
+void Listener::parseActiveError(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_activeErrorFbck = 1;
+}
+
+void Listener::parseMultiturnMode(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_multiturnMode = 1;
 }

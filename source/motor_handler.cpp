@@ -662,3 +662,308 @@ bool MotorHandler::getModel(vector<int> ids, vector<std::string>& models)
     else
         return 0;      
 }
+
+bool MotorHandler::getModel(vector<std::string>& models)
+{
+    return(getModel(m_ids, models));
+}
+
+
+bool MotorHandler::getOperatingMode(vector<int> ids, vector<OperatingMode>& modes)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestOperatingMode(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send operating mode request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    OperatingMode temp;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->getOperatingMode(ids[i], temp);
+        if (success)
+            modes[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getOperatingMode(vector<OperatingMode>& modes)
+{
+    return(getOperatingMode(m_ids, modes));
+}
+
+bool MotorHandler::getPowerConsumption(vector<int> ids, vector<float>& powers)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestPowerConsumption(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send power consumption request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    float temp;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->getPowerConsumption(ids[i], temp);
+        if (success)
+            powers[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getPowerConsumption(vector<float>& powers)
+{
+    return(getPowerConsumption(m_ids, powers));
+}
+
+
+bool MotorHandler::getRuntime(vector<int> ids, vector<float>& runtimes)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestRuntime(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send runtime request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    float temp;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->getRuntime(ids[i], temp);
+        if (success)
+            runtimes[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getRuntime(vector<float>& runtimes)
+{
+    return(getRuntime(m_ids, runtimes));
+}
+
+bool MotorHandler::getSoftwareDate(vector<int> ids, vector<int>& dates)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestSoftwareDate(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send software date request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    int temp;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->getSoftwareDate(ids[i], temp);
+        if (success)
+            dates[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getSoftwareDate(vector<int>& dates)
+{
+    return(getSoftwareDate(m_ids, dates));
+}
+
+// ----------  Other settings ----------- //
+
+
+bool MotorHandler::enableCANFilter(std::vector<int> ids){
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->enableCANFilter(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send CAN filter enable to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->canFilterWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::enableCANFilter()
+{
+    return(enableCANFilter(m_ids));
+}
+
+bool MotorHandler::disableCANFilter(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->disableCANFilter(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send CAN filter disable to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->canFilterWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+
+bool MotorHandler::disableCANFilter()
+{
+    return(disableCANFilter(m_ids));
+}
+
+
+// ----------  Other settings ----------- //
+
+bool MotorHandler::resetMultiturnCounter(vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestClearMultiturn(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send multiturn reset request to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->multiturnResetWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::resetMultiturnCounter()
+{
+    return(m_ids, resetMultiturnCounter(m_ids));
+}
+
+bool MotorHandler::enableActiveErrorFbck(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->enableActiveErrorFbck(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send active error status to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->activeErrorFbckWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::enableActiveErrorFbck()
+{
+    return(enableActiveErrorFbck(m_ids));
+}
+
+
+bool MotorHandler::disableActiveErrorFbck(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->disableActiveErrorFbck(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send inactive error status to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->activeErrorFbckWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::disableActiveErrorFbck()
+{
+    return(disableActiveErrorFbck(m_ids));
+}
+
+// NEED RESET?
+bool MotorHandler::setMultiturnMode(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->setMultiturnMode(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send multiturn mode to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->multiturnModeWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+// NEED RESET?
+bool MotorHandler::setMultiturnMode()
+{
+    return(setMultiturnMode(m_ids));
+}
+
+// NEED RESET?
+bool MotorHandler::setSingleturnMode(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->setSingleturnMode(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to send singleturn mode to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->multiturnModeWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+// NEED RESET?
+bool MotorHandler::setSingleturnMode()
+{
+    return(setSingleturnMode(m_ids));
+}
