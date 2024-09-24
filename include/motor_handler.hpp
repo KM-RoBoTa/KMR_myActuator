@@ -114,6 +114,31 @@ public:
     bool setSingleturnMode(std::vector<int> ids);
     bool setSingleturnMode();
 
+    // ---------- Position feedbacks ----------- //
+    bool getEncoderPosition(std::vector<int> ids, std::vector<int>& positions);
+    bool getEncoderPosition(std::vector<int>& positions);
+    bool getRawEncoderPosition(std::vector<int> ids, std::vector<int>& positions);
+    bool getRawEncoderPosition(std::vector<int>& positions);
+    bool getEncoderZeroOffset(std::vector<int> ids, std::vector<int>& positions);
+    bool getEncoderZeroOffset(std::vector<int>& positions);
+    bool writeEncoderZeroOffset(std::vector<int> ids, std::vector<int> offsets);
+    bool writeEncoderZeroOffset(std::vector<int> offsets);
+    bool writeEncoderZeroOffset_currentPos(std::vector<int> ids);
+    bool writeEncoderZeroOffset_currentPos();
+
+    bool getEncoderFbck_ST(std::vector<int> ids, std::vector<Encoder_ST>& encoders);
+    bool getEncoderFbck_ST(std::vector<Encoder_ST>& encoders);
+
+    bool getPosition_MT(std::vector<int> ids, std::vector<float>& angles);
+    bool getPosition_MT(std::vector<float>& angles);
+    bool getPosition_ST(std::vector<int> ids, std::vector<float>& angles);
+    bool getPosition_ST(std::vector<float>& angles);
+
+    bool writePosition_MT(std::vector<int> ids, std::vector<float> maxSpeeds, std::vector<float> angles);
+    bool writePosition_MT(std::vector<float> maxSpeeds, std::vector<float> angles);
+    bool writePosition_ST(std::vector<int> ids, std::vector<float> maxSpeeds, std::vector<float> angles);
+    bool writePosition_ST(std::vector<float> maxSpeeds, std::vector<float> angles);
+
 
 private:
     Listener* m_listener = nullptr;

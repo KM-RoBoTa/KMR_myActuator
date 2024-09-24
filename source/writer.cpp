@@ -759,3 +759,288 @@ int Writer::setSingleturnMode(int id)
  
     return nbytes;   
 }
+
+int Writer::requestEncoderPosition(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x60;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;       
+}
+
+int Writer::requestRawEncoderPosition(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x61;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;       
+}
+
+
+int Writer::requestEncoderZeroOffset(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x62;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::writeEncoderZeroOffset(int id, int offset)
+{
+    if (offset < 0) {
+        cout << "Error! Attempt to set a negative encoder zero offset. Exiting" << endl;
+        exit(1);
+    }
+
+    int32_t offsetParam = (int32_t) offset;  
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x63;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = (int8_t) offsetParam;
+    frame.data[5] = (int8_t) (offsetParam >> 8);
+    frame.data[6] = (int8_t) (offsetParam >> 16);
+    frame.data[7] = (int8_t) (offsetParam >> 24);
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::writeEncoderZeroOffset(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x64;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::requestEncoderFbck_ST(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x90;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::requestPosition_MT(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x92;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+int Writer::requestPosition_ST(int id)
+{
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0x94;
+    frame.data[1] = 0x00;
+    frame.data[2] = 0x00;
+    frame.data[3] = 0x00;
+    frame.data[4] = 0x00;
+    frame.data[5] = 0x00;
+    frame.data[6] = 0x00;
+    frame.data[7] = 0x00;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}    
+
+int Writer::writePosition_MT(int id, float maxSpeed, float angle)
+{   
+    if (maxSpeed < 0) {
+        cout << "Error? Input max speed is negative in position command. Setting it to 0 instead" << endl;
+        maxSpeed = 0;
+    }
+
+    // Convert from our custom references
+    maxSpeed = rad2deg(maxSpeed);
+    angle = -rad2deg(angle);
+
+    // Get parameters
+    float unitsSpeed = 1;
+    float unitsPosition = 0.01;
+
+    int32_t parameter = 0;
+    int32_t absParam = abs(angle/unitsPosition);
+
+    if (angle >= 0)
+        parameter = absParam;
+    else
+        parameter = (~absParam) + 1;
+
+    int16_t maxSpeedParameter = (int16_t) maxSpeed/unitsPosition;
+    
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0xA4;
+    frame.data[1] = 0x00;
+    frame.data[2] = (int8_t) maxSpeedParameter;
+    frame.data[3] = (int8_t) (maxSpeedParameter >> 8);  // Speed coded to 0
+    frame.data[4] = (int8_t) parameter;
+    frame.data[5] = (int8_t) (parameter >> 8);
+    frame.data[6] = (int8_t) (parameter >> 16);
+    frame.data[7] = (int8_t) (parameter >> 24);
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}
+
+
+int Writer::writePosition_ST(int id, float maxSpeed, float angle)
+{   
+    // Check the validity of input data
+    if (maxSpeed < 0) {
+        cout << "Error? Input max speed is negative in position command. Setting it to 0 instead" << endl;
+        maxSpeed = 0;
+    }
+    if (angle > M_PI) {
+        cout << "Error! Input angle > pi in single turn command. Setting it to PI instead" << endl;
+        angle = M_PI;
+    }
+    else if (angle < -M_PI) {
+        cout << "Error! Input angle < -pi in single turn command. Setting it to -PI instead" << endl;
+        angle = -M_PI;
+    }
+
+    // Convert from our custom references
+    maxSpeed = rad2deg(maxSpeed);
+    angle = -rad2deg(angle);
+
+    // DEBUG
+    angle = 360; // deg
+    maxSpeed = 500; // dps
+
+    // Get parameters
+    float unitsSpeed = 1;
+    float unitsPosition = 0.01;
+
+    int16_t parameter = abs(angle/unitsPosition);
+    int8_t spinDirection = 0;
+
+    if (angle >= 0)
+        spinDirection = 0;
+    else
+        spinDirection = 1;
+
+    int16_t maxSpeedParameter = (int16_t) maxSpeed/unitsSpeed;
+    
+    struct can_frame frame;
+    frame.can_id = 0x140 + id;
+    frame.len = FRAME_LENGTH;
+    frame.data[0] = 0xA6;
+    frame.data[1] = spinDirection;
+    frame.data[2] = (int8_t) maxSpeedParameter;
+    frame.data[3] = (int8_t) (maxSpeedParameter >> 8); 
+    frame.data[4] = (int8_t) parameter;
+    frame.data[5] = (int8_t) (parameter >> 8);
+    frame.data[6] = 0;
+    frame.data[7] = 0;
+
+    cout << "data 1:" << (int)frame.data[1]<< endl;
+    cout << "data 2:" << (int)frame.data[2]<< endl;
+    cout << "data 3:" << (int)frame.data[3]<< endl;
+    cout << "data 4:" << (int)frame.data[4]<< endl;
+    cout << "data 5:" << (int)frame.data[5]<< endl;
+    cout << "data 6:" << (int)frame.data[6]<< endl;
+    cout << "data 7:" << (int)frame.data[7]<< endl;
+
+    // Send frame
+    int nbytes = -1;
+    nbytes = write(m_s, &frame, sizeof(can_frame));
+ 
+    return nbytes;    
+}

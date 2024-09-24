@@ -73,6 +73,12 @@ enum OperatingMode {
     TORQUE_LOOP, SPEED_LOOP, POSITION_LOOP
 };
 
+struct Encoder_ST {
+    int encoderPosition;
+    int encoderRawPosition;
+    int encoderZeroOffset;
+};
+
 
 /**
  * @brief   Structure saving the info of a data field
@@ -85,6 +91,9 @@ struct Motor {
     float torque;
     float speed; 
     float angle;
+
+    float angle_posFbck_MT; // SAME AS ABOVE??
+    float angle_posFbck_ST; // SAME AS ABOVE??
 
     PIDReport pidReport;
 
@@ -100,6 +109,15 @@ struct Motor {
     float power; // W
     float runtime; // s
     int softwareDate;
+
+    int encoderPosition = 0;
+    int encoderRawPosition = 0;
+    int encoderZeroOffset = 0;
+
+    // ST???
+    int encoderPosition_ST = 0;
+    int encoderRawPosition_ST = 0;
+    int encoderZeroOffset_ST = 0;
 
     // Update flags
     bool f_model = 0;
@@ -143,6 +161,23 @@ struct Motor {
     bool fw_multiturnReset = 0;
     bool fw_multiturnMode = 0;
     bool fw_activeErrorFbck = 0;
+
+    bool fr_encoder = 0;
+    bool fr_encoderRaw = 0;
+    bool fr_encoderZeroOffset = 0;
+    bool fw_encoderZeroOffset = 0;
+
+    // ST??
+    bool fr_encoder_ST = 0;
+    bool fr_encoderRaw_ST = 0;
+    bool fr_encoderZeroOffset_ST = 0; 
+
+    bool fr_position_MT = 0; // SAME AS OTHER???
+    bool fr_position_ST = 0;
+    bool fw_position_MT = 0; // SAME AS OTHER???
+    bool fw_position_ST = 0; 
+
+
 
     // Constructor
     Motor(int id)

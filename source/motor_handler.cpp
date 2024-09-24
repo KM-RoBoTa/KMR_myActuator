@@ -967,3 +967,278 @@ bool MotorHandler::setSingleturnMode()
 {
     return(setSingleturnMode(m_ids));
 }
+
+// ---------- Position feedbacks ----------- //
+
+
+bool MotorHandler::getEncoderPosition(vector<int> ids, vector<int>& positions)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestEncoderPosition(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to request encoder position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        int temp;
+        bool success = m_listener->getEncoderPosition(ids[i], temp);
+        if (success)
+            positions[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getEncoderPosition(vector<int>& positions)
+{
+    return(getEncoderPosition(m_ids, positions));
+}
+
+bool MotorHandler::getRawEncoderPosition(vector<int> ids, vector<int>& positions)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestRawEncoderPosition(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to request raw encoder position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        int temp;
+        bool success = m_listener->getRawEncoderPosition(ids[i], temp);
+        if (success)
+            positions[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+
+bool MotorHandler::getRawEncoderPosition(vector<int>& positions)
+{
+    return(getRawEncoderPosition(m_ids, positions));
+}
+
+bool MotorHandler::getEncoderZeroOffset(vector<int> ids, vector<int>& positions)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestEncoderZeroOffset(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to request encoder zero position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        int temp;
+        bool success = m_listener->getEncoderZeroOffset(ids[i], temp);
+        if (success)
+            positions[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getEncoderZeroOffset(vector<int>& positions)
+{
+    return(getEncoderZeroOffset(m_ids, positions));
+}
+
+bool MotorHandler::writeEncoderZeroOffset(vector<int> ids, vector<int> offsets)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writeEncoderZeroOffset(ids[i], offsets[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to write encoder zero position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->encoderZeroOffsetWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::writeEncoderZeroOffset(vector<int> offsets)
+{
+    return(writeEncoderZeroOffset(m_ids, offsets));
+}
+
+bool MotorHandler::writeEncoderZeroOffset_currentPos(vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writeEncoderZeroOffset(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to write encoder zero position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->encoderZeroOffsetWritten(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::writeEncoderZeroOffset_currentPos()
+{
+    return(writeEncoderZeroOffset_currentPos(m_ids));
+}
+
+bool MotorHandler::getEncoderFbck_ST(vector<int> ids, vector<Encoder_ST>& encoders)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestEncoderFbck_ST(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to request ST encoder fbck to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        Encoder_ST temp;
+        bool success = m_listener->getEncoderFbck_ST(ids[i], temp);
+        if (success)    
+            encoders[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getEncoderFbck_ST(vector<Encoder_ST>& encoders)
+{
+    return(getEncoderFbck_ST(m_ids, encoders));
+}
+
+bool MotorHandler::getPosition_MT(vector<int> ids, vector<float>& angles)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestPosition_MT(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to request MT position fbck to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        float temp;
+        bool success = m_listener->getPosition_MT(ids[i], temp);
+        if (success)    
+            angles[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getPosition_MT(vector<float>& angles)
+{
+    return(getPosition_MT(m_ids, angles));
+}
+
+bool MotorHandler::getPosition_ST(vector<int> ids, vector<float>& angles)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->requestPosition_ST(ids[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to request ST position fbck to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        float temp;
+        bool success = m_listener->getPosition_ST(ids[i], temp);
+        if (success)    
+            angles[i] = temp;
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::getPosition_ST(vector<float>& angles)
+{
+    return(getPosition_ST(m_ids, angles));
+}
+
+bool MotorHandler::writePosition_MT(vector<int> ids, vector<float> maxSpeeds, vector<float> angles)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writePosition_MT(ids[i], maxSpeeds[i], angles[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to write MT position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->positionMT_written(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;    
+}
+
+
+bool MotorHandler::writePosition_MT(vector<float> maxSpeeds, vector<float> angles)
+{
+    return(writePosition_MT(m_ids, maxSpeeds, angles));
+}
+
+
+bool MotorHandler::writePosition_ST(vector<int> ids, vector<float> maxSpeeds, vector<float> angles)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writePosition_ST(ids[i], maxSpeeds[i], angles[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to write ST position to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->positionST_written(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;    
+}
+
+
+bool MotorHandler::writePosition_ST(vector<float> maxSpeeds, vector<float> angles)
+{
+    return(writePosition_ST(m_ids, maxSpeeds, angles));
+}

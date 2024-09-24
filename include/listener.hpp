@@ -75,9 +75,19 @@ public:
     bool multiturnModeWritten(int id);
     bool activeErrorFbckWritten(int id);
 
+    // ---- Position feedbacks ---- //
+    bool getEncoderPosition(int id, int& position);
+    bool getRawEncoderPosition(int id, int& position);
+    bool getEncoderZeroOffset(int id, int& position);
+    bool encoderZeroOffsetWritten(int id);
 
+    bool getEncoderFbck_ST(int id, Encoder_ST& encoder_ST);
 
+    bool getPosition_MT(int id, float& angle);
+    bool getPosition_ST(int id, float& angle);
 
+    bool positionMT_written(int id);
+    bool positionST_written(int id);
 
 private:
     // Thread
@@ -130,6 +140,19 @@ private:
     void parseMultiturnMode(can_frame frame);
     void parseActiveError(can_frame frame);
 
+    // ---- Position feedbacks ---- //
+    void parseEncoderFbck(can_frame frame);
+    void parseRawEncoderFbck(can_frame frame);
+    void parseEncoderZeroOffsetRead(can_frame frame);
+    void parseEncoderZeroOffsetWrite(can_frame frame);
+
+    void parseEncoderFbck_ST(can_frame frame);
+
+    void parsePositionFbck_MT(can_frame frame);
+    void parsePositionFbck_ST(can_frame frame);
+
+    void parsePositionCommand_MT(can_frame frame);
+    void parsePositionCommand_ST(can_frame frame);
 };
 
 #endif

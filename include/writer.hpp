@@ -72,7 +72,22 @@ public:
     int enableActiveErrorFbck(int id);  // 0x20
     int disableActiveErrorFbck(int id);  // 0x20
 
+    // Position feedbacks
+    int requestEncoderPosition(int id);     // 0x60 (includes 0 offset)
+    int requestRawEncoderPosition(int id);     // 0x61 (without 0 offset)
+    int requestEncoderZeroOffset(int id);  // 0x62
+    int writeEncoderZeroOffset(int id, int offset);     // 0x63
+    int writeEncoderZeroOffset(int id);     // 0x64
 
+    // ST
+    int requestEncoderFbck_ST(int id); // 0x90
+
+    // Angles
+    int requestPosition_MT(int id); // 0x92
+    int requestPosition_ST(int id); // 0x94
+
+    int writePosition_MT(int id, float maxSpeed, float angle);   // 0xA4
+    int writePosition_ST(int id, float maxSpeed, float angle);   // 0xA6
 
     // pos command stuff
     // 0x20: clear multi turn value

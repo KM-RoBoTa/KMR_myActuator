@@ -116,6 +116,19 @@ int Listener::listenerLoop(int s)
 
 			case 0x20: 	parseCompoundFct(frame); break;
 
+			case 0x60:	parseEncoderFbck(frame); break;
+			case 0x61:	parseRawEncoderFbck(frame); break;
+			case 0x62:	parseEncoderZeroOffsetRead(frame); break;
+			case 0x63:	parseEncoderZeroOffsetWrite(frame); break; // input value
+			case 0x64:	parseEncoderZeroOffsetWrite(frame); break; // current position
+
+			case 0x90:	parseEncoderFbck_ST(frame); break;
+
+			case 0x92:	parsePositionFbck_MT(frame); break;
+			case 0x94:	parsePositionFbck_ST(frame); break;
+
+			case 0xA4:	parsePositionCommand_MT(frame); break;
+			case 0xA6:	parsePositionCommand_ST(frame); break;
 
 			default:
 				if (frame.can_id == 0x501) 
@@ -924,6 +937,249 @@ bool Listener::multiturnModeWritten(int id)
 	return available;		
 }
 
+bool Listener::getEncoderPosition(int id, int& position)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the encoder position of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_encoder;
+		position = m_motors[idx]->encoderPosition;
+
+		// Clear update flag
+		m_motors[idx]->fr_encoder = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::getRawEncoderPosition(int id, int& position)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the raw encoder position of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_encoderRaw;
+		position = m_motors[idx]->encoderRawPosition;
+
+		// Clear update flag
+		m_motors[idx]->fr_encoderRaw = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::getEncoderZeroOffset(int id, int& position)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting the encoder zero offset of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_encoderZeroOffset;
+		position = m_motors[idx]->encoderZeroOffset;
+
+		// Clear update flag
+		m_motors[idx]->fr_encoderZeroOffset = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::encoderZeroOffsetWritten(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting encoder's zero writing acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_encoderZeroOffset;
+
+		// Clear update flag
+		m_motors[idx]->fw_encoderZeroOffset = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::getEncoderFbck_ST(int id, Encoder_ST& encoder_ST)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting ST encoder's fbck of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_encoderZeroOffset_ST;
+
+		encoder_ST.encoderPosition = m_motors[idx]->encoderPosition_ST;
+		encoder_ST.encoderRawPosition = m_motors[idx]->encoderRawPosition_ST;
+		encoder_ST.encoderZeroOffset = m_motors[idx]->encoderZeroOffset_ST;
+
+		// Clear update flag
+		m_motors[idx]->fr_encoderZeroOffset_ST = 0;
+		m_motors[idx]->fr_encoder_ST = 0;
+		m_motors[idx]->fr_encoderRaw_ST = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::getPosition_MT(int id, float& angle)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting multiturn position of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_position_MT;
+		angle = m_motors[idx]->angle_posFbck_MT;
+
+		// Clear update flag
+		m_motors[idx]->fr_position_MT = 0;
+
+	}
+
+	return available;	
+}
+
+bool Listener::getPosition_ST(int id, float& angle)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting singleturn position of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fr_position_ST;
+		angle = m_motors[idx]->angle_posFbck_ST;
+
+		// Clear update flag
+		m_motors[idx]->fr_position_ST = 0;
+
+	}
+
+	return available;	
+}
+
+bool Listener::positionMT_written(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting position writing acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_position_MT;
+
+		// Clear update flag
+		m_motors[idx]->fw_position_MT = 0;
+	}
+
+	return available;	
+}
+
+bool Listener::positionST_written(int id)
+{
+	int idx = getIndex(m_ids, id);
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Getting position writing acknowledgement of motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_position_ST;
+
+		// Clear update flag
+		m_motors[idx]->fw_position_ST = 0;
+	}
+
+	return available;	
+}
+
+
+
+
+
+
 
 
 
@@ -1479,4 +1735,187 @@ void Listener::parseMultiturnMode(can_frame frame)
 
 	scoped_lock lock(m_mutex);
 	m_motors[idx]->fw_multiturnMode = 1;
+}
+
+
+// ---- Position feedbacks ---- //
+
+void Listener::parseEncoderFbck(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Parse data
+	int64_t encoderParameter = ( (int64_t) frame.data[7] << 24) +
+							   ( (int64_t) frame.data[6] << 16) +
+							   ( (int64_t) frame.data[5] <<  8) +
+							   ( (int64_t) frame.data[4]      );
+	int encoderPosition = (int) encoderParameter;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->encoderPosition = encoderPosition;
+	m_motors[idx]->fr_encoder = 1;
+}
+
+void Listener::parseRawEncoderFbck(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Parse data
+	int64_t encoderParameter = ( (int64_t) frame.data[7] << 24) +
+							   ( (int64_t) frame.data[6] << 16) +
+							   ( (int64_t) frame.data[5] <<  8) +
+							   ( (int64_t) frame.data[4]      );
+	int encoderPosition = (int) encoderParameter;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->encoderRawPosition = encoderPosition;
+	m_motors[idx]->fr_encoderRaw = 1;
+}
+
+void Listener::parseEncoderZeroOffsetRead(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Parse data
+	int64_t encoderParameter = ( (int64_t) frame.data[7] << 24) +
+							   ( (int64_t) frame.data[6] << 16) +
+							   ( (int64_t) frame.data[5] <<  8) +
+							   ( (int64_t) frame.data[4]      );
+	int encoderPosition = (int) encoderParameter;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->encoderZeroOffset = encoderPosition;
+	m_motors[idx]->fr_encoderZeroOffset = 1;
+}
+
+void Listener::parseEncoderZeroOffsetWrite(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);		
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_encoderZeroOffset = 1;
+}
+
+
+void Listener::parseEncoderFbck_ST(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Parse data
+	int16_t encoderParameter     = ( (int16_t) frame.data[3] << 8) +
+							       ( (int16_t) frame.data[2]     );
+	int16_t encoderRawParameter  = ( (int16_t) frame.data[5] << 8) +
+							       ( (int16_t) frame.data[4]     );
+	int16_t encoderZeroParameter = ( (int16_t) frame.data[7] << 8) +
+							       ( (int16_t) frame.data[6]     );
+	int encoderPosition = (int) encoderParameter;
+	int encoderRawPosition_ST = (int) encoderRawParameter;
+	int encoderZeroOffset_ST = (int) encoderZeroParameter;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->encoderPosition_ST = encoderPosition;
+	m_motors[idx]->encoderRawPosition_ST = encoderRawPosition_ST;
+	m_motors[idx]->encoderZeroOffset_ST = encoderZeroOffset_ST;
+
+	m_motors[idx]->fr_encoder_ST = 1;
+	m_motors[idx]->fr_encoderRaw_ST = 1;
+	m_motors[idx]->fr_encoderZeroOffset_ST = 1;
+}
+
+void Listener::parsePositionFbck_MT(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Parse data
+	int32_t positionParameter = ( (int32_t) frame.data[7] << 24) +
+							    ( (int32_t) frame.data[6] << 16) +
+							    ( (int32_t) frame.data[5] <<  8) +
+							    ( (int32_t) frame.data[4]      );
+
+	const float unitsPosition = 0.01;
+	float position = (float) positionParameter * unitsPosition;
+
+	// Convert here
+	position = -deg2rad(position);
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->angle_posFbck_MT = position;
+	m_motors[idx]->fr_position_MT = 1;
+}
+
+
+void Listener::parsePositionFbck_ST(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	// Parse data
+	int16_t positionParameter = ( (int16_t) frame.data[7] << 8) +
+							    ( (int16_t) frame.data[6]     );
+
+	const float unitsPosition = 0.01;
+	float position = (float) positionParameter * unitsPosition;
+
+	// Convert here
+	position = -deg2rad(position);
+
+	if (position > M_PI)
+		position = position - 2*M_PI;
+	else if (position < -M_PI)
+		position = position + 2*M_PI;
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->angle_posFbck_ST = position;
+	m_motors[idx]->fr_position_ST = 1;
+}
+
+void Listener::parsePositionCommand_MT(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_position_MT = 1;
+}
+
+void Listener::parsePositionCommand_ST(can_frame frame)
+{
+	// Extract the motor ID from the received frame
+	int id = frame.can_id - 0x240;
+
+	// Get the vector's index
+	int idx = getIndex(m_ids, id);	
+
+	scoped_lock lock(m_mutex);
+	m_motors[idx]->fw_position_ST = 1;
 }
