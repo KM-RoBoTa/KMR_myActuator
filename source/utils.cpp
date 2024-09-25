@@ -14,6 +14,11 @@
 #include "utils.hpp"
 #include <cmath>
 
+#include <sstream> // Convert dec-hex
+#include <cstring>
+
+using namespace std;
+
 // Function to return the index of an element k
 int getIndex(std::vector<int> v, int k) 
 { 
@@ -72,4 +77,13 @@ double get_delta_us(struct timespec t2, struct timespec t1)
     }
 
     return(td.tv_sec*1000000 + td.tv_nsec/1000);
+}
+
+std::string convertToHex(int dec) 
+{
+    std::stringstream ss;
+    ss << std::hex << dec; // int decimal_value
+    std::string res ( ss.str() );
+
+    return res;
 }

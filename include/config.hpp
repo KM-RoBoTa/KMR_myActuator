@@ -15,9 +15,10 @@
 #define KMR_MYACTU_CONFIG_HPP
 
 #include <string>
+#include <stdint.h>
 
-#define FRAME_LENGTH    8
-#define RESPONSE_TIMEOUT 30*1000 // us
+#define FRAME_LENGTH        8
+#define RESPONSE_TIMEOUT    30*1000 // us
 
 #define ERR_MOTOR_STALL     0x0002
 #define ERR_UNDERVOLTAGE    0x0004
@@ -74,9 +75,9 @@ enum OperatingMode {
 };
 
 struct Encoder_ST {
-    int encoderPosition;
-    int encoderRawPosition;
-    int encoderZeroOffset;
+    uint16_t encoderPosition;
+    uint16_t encoderRawPosition;
+    uint16_t encoderZeroOffset;
 };
 
 
@@ -110,14 +111,14 @@ struct Motor {
     float runtime; // s
     int softwareDate;
 
-    int encoderPosition = 0;
-    int encoderRawPosition = 0;
-    int encoderZeroOffset = 0;
+    int32_t encoderPosition = 0;
+    uint32_t encoderRawPosition = 0;
+    uint32_t encoderZeroOffset = 0;
 
     // ST???
-    int encoderPosition_ST = 0;
-    int encoderRawPosition_ST = 0;
-    int encoderZeroOffset_ST = 0;
+    uint16_t encoderPosition_ST = 0;
+    uint16_t encoderRawPosition_ST = 0;
+    uint16_t encoderZeroOffset_ST = 0;
 
     // Update flags
     bool f_model = 0;
@@ -176,7 +177,7 @@ struct Motor {
     bool fr_position_ST = 0;
     bool fw_position_MT = 0; // SAME AS OTHER???
     bool fw_position_ST = 0; 
-
+    bool fw_positionIncr_MT = 0;
 
 
     // Constructor

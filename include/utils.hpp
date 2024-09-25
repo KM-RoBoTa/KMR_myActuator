@@ -29,6 +29,8 @@ float rad2deg(float rad);
 
 timespec time_s();
 double get_delta_us(struct timespec t2, struct timespec t1);
+std::string convertToHex(int dec) ;
+
 
 template<typename T>
 T saturate(T min, T max, T val)

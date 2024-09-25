@@ -971,7 +971,7 @@ bool MotorHandler::setSingleturnMode()
 // ---------- Position feedbacks ----------- //
 
 
-bool MotorHandler::getEncoderPosition(vector<int> ids, vector<int>& positions)
+bool MotorHandler::getEncoderPosition(vector<int> ids, vector<int32_t>& positions)
 {
     for (int i=0; i<ids.size(); i++) {
         if(m_writer->requestEncoderPosition(ids[i]) < 0)
@@ -980,7 +980,7 @@ bool MotorHandler::getEncoderPosition(vector<int> ids, vector<int>& positions)
 
     int fullSuccess = 0;
     for (int i=0; i<ids.size(); i++) {
-        int temp;
+        int32_t temp;
         bool success = m_listener->getEncoderPosition(ids[i], temp);
         if (success)
             positions[i] = temp;
@@ -994,12 +994,12 @@ bool MotorHandler::getEncoderPosition(vector<int> ids, vector<int>& positions)
         return 0;  
 }
 
-bool MotorHandler::getEncoderPosition(vector<int>& positions)
+bool MotorHandler::getEncoderPosition(vector<int32_t>& positions)
 {
     return(getEncoderPosition(m_ids, positions));
 }
 
-bool MotorHandler::getRawEncoderPosition(vector<int> ids, vector<int>& positions)
+bool MotorHandler::getRawEncoderPosition(vector<int> ids, vector<uint32_t>& positions)
 {
     for (int i=0; i<ids.size(); i++) {
         if(m_writer->requestRawEncoderPosition(ids[i]) < 0)
@@ -1008,7 +1008,7 @@ bool MotorHandler::getRawEncoderPosition(vector<int> ids, vector<int>& positions
 
     int fullSuccess = 0;
     for (int i=0; i<ids.size(); i++) {
-        int temp;
+        uint32_t temp;
         bool success = m_listener->getRawEncoderPosition(ids[i], temp);
         if (success)
             positions[i] = temp;
@@ -1023,12 +1023,12 @@ bool MotorHandler::getRawEncoderPosition(vector<int> ids, vector<int>& positions
 }
 
 
-bool MotorHandler::getRawEncoderPosition(vector<int>& positions)
+bool MotorHandler::getRawEncoderPosition(vector<uint32_t>& positions)
 {
     return(getRawEncoderPosition(m_ids, positions));
 }
 
-bool MotorHandler::getEncoderZeroOffset(vector<int> ids, vector<int>& positions)
+bool MotorHandler::getEncoderZeroOffset(vector<int> ids, vector<uint32_t>& positions)
 {
     for (int i=0; i<ids.size(); i++) {
         if(m_writer->requestEncoderZeroOffset(ids[i]) < 0)
@@ -1037,7 +1037,7 @@ bool MotorHandler::getEncoderZeroOffset(vector<int> ids, vector<int>& positions)
 
     int fullSuccess = 0;
     for (int i=0; i<ids.size(); i++) {
-        int temp;
+        uint32_t temp;
         bool success = m_listener->getEncoderZeroOffset(ids[i], temp);
         if (success)
             positions[i] = temp;
@@ -1051,12 +1051,12 @@ bool MotorHandler::getEncoderZeroOffset(vector<int> ids, vector<int>& positions)
         return 0;  
 }
 
-bool MotorHandler::getEncoderZeroOffset(vector<int>& positions)
+bool MotorHandler::getEncoderZeroOffset(vector<uint32_t>& positions)
 {
     return(getEncoderZeroOffset(m_ids, positions));
 }
 
-bool MotorHandler::writeEncoderZeroOffset(vector<int> ids, vector<int> offsets)
+bool MotorHandler::writeEncoderZeroOffset(vector<int> ids, vector<uint32_t> offsets)
 {
     for (int i=0; i<ids.size(); i++) {
         if(m_writer->writeEncoderZeroOffset(ids[i], offsets[i]) < 0)
@@ -1076,7 +1076,7 @@ bool MotorHandler::writeEncoderZeroOffset(vector<int> ids, vector<int> offsets)
         return 0;  
 }
 
-bool MotorHandler::writeEncoderZeroOffset(vector<int> offsets)
+bool MotorHandler::writeEncoderZeroOffset(vector<uint32_t> offsets)
 {
     return(writeEncoderZeroOffset(m_ids, offsets));
 }
@@ -1241,4 +1241,30 @@ bool MotorHandler::writePosition_ST(vector<int> ids, vector<float> maxSpeeds, ve
 bool MotorHandler::writePosition_ST(vector<float> maxSpeeds, vector<float> angles)
 {
     return(writePosition_ST(m_ids, maxSpeeds, angles));
+}
+
+
+bool MotorHandler::writePositionIncrement_MT(std::vector<int> ids, std::vector<float> maxSpeeds, std::vector<float> angles)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if(m_writer->writePositionIncrement_MT(ids[i], maxSpeeds[i], angles[i]) < 0)
+            cout << "[FAILED REQUEST] Failed to write MT position increment to motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->positionIncrMT_written(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+bool MotorHandler::writePositionIncrement_MT(std::vector<float> maxSpeeds, std::vector<float> angles)
+{
+    return(writePositionIncrement_MT(m_ids, maxSpeeds, angles));
 }

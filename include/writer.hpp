@@ -15,6 +15,7 @@
 #define KMR_MYACTU_WRITER_HPP
 
 #include <vector>
+
 #include "config.hpp"
 #include "utils.hpp"
 
@@ -76,7 +77,7 @@ public:
     int requestEncoderPosition(int id);     // 0x60 (includes 0 offset)
     int requestRawEncoderPosition(int id);     // 0x61 (without 0 offset)
     int requestEncoderZeroOffset(int id);  // 0x62
-    int writeEncoderZeroOffset(int id, int offset);     // 0x63
+    int writeEncoderZeroOffset(int id, uint32_t offset);     // 0x63
     int writeEncoderZeroOffset(int id);     // 0x64
 
     // ST
@@ -88,6 +89,7 @@ public:
 
     int writePosition_MT(int id, float maxSpeed, float angle);   // 0xA4
     int writePosition_ST(int id, float maxSpeed, float angle);   // 0xA6
+    int writePositionIncrement_MT(int id, float maxSpeed, float increment); // 0xA8
 
     // pos command stuff
     // 0x20: clear multi turn value

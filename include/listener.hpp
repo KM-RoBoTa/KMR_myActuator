@@ -76,9 +76,9 @@ public:
     bool activeErrorFbckWritten(int id);
 
     // ---- Position feedbacks ---- //
-    bool getEncoderPosition(int id, int& position);
-    bool getRawEncoderPosition(int id, int& position);
-    bool getEncoderZeroOffset(int id, int& position);
+    bool getEncoderPosition(int id, int32_t& position);
+    bool getRawEncoderPosition(int id, uint32_t& position);
+    bool getEncoderZeroOffset(int id, uint32_t& position);
     bool encoderZeroOffsetWritten(int id);
 
     bool getEncoderFbck_ST(int id, Encoder_ST& encoder_ST);
@@ -88,6 +88,7 @@ public:
 
     bool positionMT_written(int id);
     bool positionST_written(int id);
+    bool positionIncrMT_written(int id);
 
 private:
     // Thread
@@ -153,6 +154,7 @@ private:
 
     void parsePositionCommand_MT(can_frame frame);
     void parsePositionCommand_ST(can_frame frame);
+    void parsePositionIncrCommand_MT(can_frame frame);
 };
 
 #endif
