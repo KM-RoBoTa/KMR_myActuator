@@ -16,6 +16,8 @@
 
 #include <string>
 #include <stdint.h>
+#include <vector>
+#include <algorithm>
 
 #define FRAME_LENGTH        8
 #define RESPONSE_TIMEOUT    30*1000 // us
@@ -29,7 +31,6 @@
 #define ERR_SPEEDING        0x0100
 #define ERR_OVERHEATING     0x1000
 #define ERR_ENCODER_CALIB   0x2000
-
 
 struct ErrorReport {
     int temperature = 0;
@@ -69,24 +70,46 @@ struct StatusReport {
     float angle;
 };
 
-
-enum OperatingMode {
-    TORQUE_LOOP, SPEED_LOOP, POSITION_LOOP
-};
-
 struct Encoder_ST {
     uint16_t encoderPosition;
     uint16_t encoderRawPosition;
     uint16_t encoderZeroOffset;
 };
 
+enum OperatingMode {
+    TORQUE_LOOP, SPEED_LOOP, POSITION_LOOP
+};
+
+enum Protocol {
+    PROTOCOL_1 = 1, PROTOCOL_2 = 2, UNDEF_PTC
+};
+
+enum Model {
+    X6_7 = 0, 
+    X6_40 = 1,
+    X8_25 = 2, 
+    X6_8 = 3,
+    X8_20 = 4,
+    X8_60 = 5,
+    X10_40 = 6,
+    X10_100 = 7,
+    X4_24 = 8, 
+    X8_90 = 9, 
+    X12_150 = 10,
+    X15_400 = 11,
+    UNDEF_MODEL
+};
+
+enum ACC_SETTINGS {
+    POSITION_ACC, POSITION_DEC, SPEED_ACC, SPEED_DEC
+};
 
 /**
  * @brief   Structure saving the info of a data field
  */
 struct Motor {
     int id;
-    //char model[FRAME_LENGTH-1];
+    Protocol protocol = UNDEF_PTC;
     std::string model;
     int temperature;
     float torque;
@@ -181,15 +204,37 @@ struct Motor {
 
 
     // Constructor
-    Motor(int id)
+    Motor(int id, Model model)
     {
         this->id = id;
+        this->model = model;
+
+        // Save protocol corresponding to the model
+        if (model == UNDEF_MODEL) {
+            std::cout << "Model for motor " << id << " is undefined!" << std::endl;
+            std::cout << std::endl;
+        }
+
+        std::vector<Model> p1_models = {X6_7, X6_40, X8_25, X6_8, X8_20, X8_60, X10_40, X10_100};
+        std::vector<Model> p2_models = {X4_24, X8_90, X12_150, X15_400};
+
+        int cnt = std::count(p1_models.begin(), p1_models.end(), model);
+        if (cnt > 0) 
+            protocol = PROTOCOL_1;
+        else {
+            cnt = std::count(p2_models.begin(), p2_models.end(), model);
+
+            if (cnt > 0)
+                protocol = PROTOCOL_2;
+            else {
+                std::cout << "Could not identify the protocol of motor " << id << ". Exiting" << std::endl;
+                exit(1);
+            }
+        }
     }
 };
 
-enum ACC_SETTINGS {
-    POSITION_ACC, POSITION_DEC, SPEED_ACC, SPEED_DEC
-};
+
 
 
 

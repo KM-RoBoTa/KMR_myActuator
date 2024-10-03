@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef KMR_MYACTU_LISTENER_HPP
-#define KMR_MYACTU_LISTENER_HPP
+#ifndef KMR_MYACTU_P1_PARSER_HPP
+#define KMR_MYACTU_P1_PARSER_HPP
 
 #include <iostream>
 #include <mutex>
@@ -22,92 +22,23 @@
 
 #include "config.hpp"
 #include "utils.hpp"
-#include "p1_parser.hpp"
-#include "p2_parser.hpp"
 
 
 /**
- * @brief   CAN bus listener, running in its own thread
+ * @brief   Parser for protocol 1
  */
-class Listener {
+class P1Parser {
 public:
-    Listener(std::vector<Motor*> motors, std::vector<int> ids, int s);
-    ~Listener();
+    P1Parser(std::vector<Motor*> motors, std::vector<int> ids, std::mutex* mutex);
+    //~P1Parser();
 
-    // --------- PID ----------- //
-    bool getPID(int id, PIDReport& pidReport);
-    bool PID_written_RAM(int id);
-    bool PID_written_EEPROM(int id);
-
-    // --------- Acc settings  ----------- //
-    bool getAccSettings(int id, ACC_SETTINGS setting, int& acc);
-    bool accSettingWritten(int id, ACC_SETTINGS setting);
-
-    // --------- On/off  ----------- //
-    bool shutdown_received(int id);
-    bool stop_received(int id);
-    bool brake_release_received(int id);
-    bool brake_lock_received(int id);
-
-    // ---- Status and errors ---- //
-    bool getErrorReport(int id, ErrorReport& errorReport);
-    bool getPhaseReport(int id, PhaseReport& phaseReport);
-
-    bool getTorque(int id, float& torque);
-    bool getSpeed(int id, float& speed);
-    bool getAngle(int id, float& angle);
-    bool getTemperature(int id, int& temperature);
-    bool getFullStatusReport(int id, StatusReport& statusReport);
-
-    // ---- Commands ---- //
-    bool torque_command_received(int id);
-    bool speedWritten(int id);
-    bool motion_written(int id);
-
-    // ---- Motor info ---- //
-    bool getModel(int id, std::string& model);
-    bool getOperatingMode(int id, OperatingMode& mode);
-    bool getPowerConsumption(int id, float& power);
-    bool getRuntime(int id, float& runtime);
-    bool getSoftwareDate(int id, int& date);
-
-    // ---- Other settings ---- //
-    bool canFilterWritten(int id);
-    bool multiturnResetWritten(int id);
-    bool multiturnModeWritten(int id);
-    bool activeErrorFbckWritten(int id);
-
-    // ---- Position feedbacks ---- //
-    bool getEncoderPosition(int id, int32_t& position);
-    bool getRawEncoderPosition(int id, uint32_t& position);
-    bool getEncoderZeroOffset(int id, uint32_t& position);
-    bool encoderZeroOffsetWritten(int id);
-
-    bool getEncoderFbck_ST(int id, Encoder_ST& encoder_ST);
-
-    bool getPosition_MT(int id, float& angle);
-    bool getPosition_ST(int id, float& angle);
-
-    bool positionMT_written(int id);
-    bool positionST_written(int id);
-    bool positionIncrMT_written(int id);
+    void parseFrame(can_frame frame); 
 
 private:
-    // Thread
-    bool m_stopThread = 0;
-    std::thread m_thread;
-    std::mutex m_mutex;
-
+    std::mutex* m_mutex;
     std::vector<Motor*> m_motors;
     int m_nbrMotors;
     std::vector<int> m_ids;
-
-    // Protocol parsers
-    P1Parser* p1Parser = nullptr;
-    //p2 parser;
-
-    int listenerLoop(int s);
-    Protocol getProtocol(can_frame frame);
 
     // --------- PID ----------- //
     void parsePIDFbck(can_frame frame);

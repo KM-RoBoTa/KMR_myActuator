@@ -25,7 +25,7 @@
  */
 class MotorHandler {
 public:
-    MotorHandler(std::vector<int> ids, const char* can_bus);
+    MotorHandler(std::vector<int> ids, const char* can_bus, std::vector<Model> models);
     ~MotorHandler();
 
     void pingMotors();
@@ -84,8 +84,8 @@ public:
                     std::vector<float> Kps, std::vector<float> Kds, std::vector<float> Tff);
 
     // ----------  Motor info ----------- //
-    bool getModel(std::vector<int> ids, std::vector<std::string>& models);
-    bool getModel(std::vector<std::string>& models);
+    //bool getModel(std::vector<int> ids, std::vector<std::string>& models);
+    //bool getModel(std::vector<std::string>& models);
     bool getOperatingMode(std::vector<int> ids, std::vector<OperatingMode>& modes); 
     bool getOperatingMode(std::vector<OperatingMode>& modes);
     bool getPowerConsumption(std::vector<int> ids, std::vector<float>& powers);

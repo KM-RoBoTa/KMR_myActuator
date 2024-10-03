@@ -28,13 +28,18 @@
 
 using namespace std;
 
-MotorHandler::MotorHandler(vector<int> ids, const char* can_bus)
+MotorHandler::MotorHandler(vector<int> ids, const char* can_bus, vector<Model> models)
 {
+    if (models.size() != ids.size()) {
+        cout << "Error! The size of the models' vector is not equal to the size of motor ids" << endl;
+        exit(1);
+    }
+
     m_ids = ids;
     m_nbrMotors = m_ids.size();
 
     for (int i=0; i<ids.size(); i++) {
-        Motor* motor = new Motor(ids[i]);
+        Motor* motor = new Motor(ids[i], models[i]);
         m_motors.push_back(motor);
     }
 
@@ -53,6 +58,9 @@ MotorHandler::~MotorHandler()
 {
     delete m_listener;
     delete m_writer;
+
+    for (int i=0; i<m_nbrMotors; i++)
+        delete m_motors[i];
 
     // close socket
 }
@@ -90,14 +98,14 @@ int MotorHandler::openSocket(const char* can_bus)
 
 void MotorHandler::pingMotors()
 {
-    vector<string> models(m_nbrMotors);
-    bool success = getModel(m_ids, models);
+    vector<float> runtimes(m_nbrMotors, 0);
+    bool success = getRuntime(m_ids, runtimes);
     
     cout << endl;
     for (int i=0; i<m_nbrMotors; i++)
     {
-        if (!models[i].empty())
-            cout << "Motor " << m_ids[i] << " pinged successfully! Model: " << models[i] << endl;
+        if (runtimes[i] != 0)
+            cout << "Motor " << m_ids[i] << " pinged successfully!" << endl;
         else {
             cout << "Error! Motor " << m_ids[i] << " is not responding" << endl;
             exit(1);
@@ -642,7 +650,7 @@ bool MotorHandler::writeMotion(vector<float> pos, vector<float> speeds,
 
 
 // ----------  Motor info ----------- //
-
+/*
 bool MotorHandler::getModel(vector<int> ids, vector<std::string>& models)
 {
     for (int i=0; i<ids.size(); i++) {
@@ -666,7 +674,7 @@ bool MotorHandler::getModel(vector<int> ids, vector<std::string>& models)
 bool MotorHandler::getModel(vector<std::string>& models)
 {
     return(getModel(m_ids, models));
-}
+}*/
 
 
 bool MotorHandler::getOperatingMode(vector<int> ids, vector<OperatingMode>& modes)
