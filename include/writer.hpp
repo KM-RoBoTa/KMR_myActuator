@@ -91,9 +91,8 @@ public:
     int writePosition_ST(int id, float maxSpeed, float angle);   // 0xA6
     int writePositionIncrement_MT(int id, float maxSpeed, float increment); // 0xA8
 
-    // pos command stuff
-    // 0x20: clear multi turn value
-    // Many other 0x20 uses
+    
+
 
 
 

@@ -43,4 +43,19 @@ T saturate(T min, T max, T val)
         return val;
 }
 
+// Result between -b and +b
+template<typename T>
+T modulo(T a, T b)
+{
+    if (b == 0) {
+        std::cout << "Error! Modulo by 0" << std::endl;
+        exit(1);
+    }
+
+    int k = (int)( (float)a /(float)b );
+    std::cout << "k = " << k << std::endl;
+    return (a-k*b);
+}
+
+
 #endif

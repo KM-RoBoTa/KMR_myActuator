@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 #include "listener.hpp"
 #include "writer.hpp"
@@ -140,6 +141,16 @@ public:
     bool writePosition_ST(std::vector<float> maxSpeeds, std::vector<float> angles);
     bool writePositionIncrement_MT(std::vector<int> ids, std::vector<float> maxSpeeds, std::vector<float> angles);
     bool writePositionIncrement_MT(std::vector<float> maxSpeeds, std::vector<float> angles);
+
+    // ---------- Custom single turn ----------- //
+    void setCustomWorkingPoint(std::vector<int> ids);
+    void setCustomWorkingPoint();
+    void setCustomSingleTurn(std::vector<int> ids);
+    void setCustomSingleTurn();
+    void setPositionLimits(std::vector<int> ids, std::vector<float> minAngles, std::vector<float> maxAngles);
+    void setPositionLimits(std::vector<float> minAngles, std::vector<float> maxAngles);
+    void resetCustomMultiturn(std::vector<int> ids);
+    void resetCustomMultiturn();
 
 private:
     Listener* m_listener = nullptr;

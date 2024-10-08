@@ -26,6 +26,8 @@
 
 #include "motor_handler.hpp"
 
+#define RESET_SPEED 2*M_PI/4
+
 using namespace std;
 
 MotorHandler::MotorHandler(vector<int> ids, const char* can_bus, vector<Model> models)
@@ -1153,6 +1155,11 @@ bool MotorHandler::getPosition_MT(vector<int> ids, vector<float>& angles)
     for (int i=0; i<ids.size(); i++) {
         float temp;
         bool success = m_listener->getPosition_MT(ids[i], temp);
+
+        // Custom offset correction (no effect by default)
+        int idx = getIndex(m_ids, ids[i]);
+        temp = temp - m_motors[idx]->refOffset;
+
         if (success)    
             angles[i] = temp;
         fullSuccess += success;
@@ -1201,6 +1208,18 @@ bool MotorHandler::getPosition_ST(vector<float>& angles)
 bool MotorHandler::writePosition_MT(vector<int> ids, vector<float> maxSpeeds, vector<float> angles)
 {
     for (int i=0; i<ids.size(); i++) {
+        int idx = getIndex(m_ids, ids[i]);
+
+        // Saturate the input angle if angle limitation is active
+        if (m_motors[idx]->limitAngles) {
+            float min = m_motors[idx]->minAngle;
+            float max = m_motors[idx]->maxAngle;
+            angles[i] = saturate(min, max, angles[i]);
+        }
+
+        // Custom offset correction (no effect by default)
+        angles[i] += m_motors[idx]->refOffset;
+
         if(m_writer->writePosition_MT(ids[i], maxSpeeds[i], angles[i]) < 0)
             cout << "[FAILED REQUEST] Failed to write MT position to motor " << ids[i] << endl;
     }
@@ -1272,7 +1291,135 @@ bool MotorHandler::writePositionIncrement_MT(std::vector<int> ids, std::vector<f
         return 0;  
 }
 
-bool MotorHandler::writePositionIncrement_MT(std::vector<float> maxSpeeds, std::vector<float> angles)
+bool MotorHandler::writePositionIncrement_MT(vector<float> maxSpeeds, vector<float> angles)
 {
     return(writePositionIncrement_MT(m_ids, maxSpeeds, angles));
+}
+
+// --------------------------------------------
+// ---------- Custom single turn ----------- //
+// --------------------------------------------
+
+// Set custom working point
+void MotorHandler::setCustomWorkingPoint(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        // Read position for each ID
+        vector<float> positions(1,0);
+        bool success = getPosition_MT(positions);
+        if (!success) {
+            cout << "Error! Could not calculate the working point for motor "<< ids[i] << ". Exiting" << endl;
+            exit(1);
+        }
+        float angle = positions[0];
+
+        // ---- Get multiturn offset -----//
+
+        // Modulo 2PI, which brings the angle between -2pi and 2pi
+        int k = (int)( (float)angle /(float)(2*M_PI) );
+        angle = angle-k*2*M_PI;
+
+        // Additional increment of k to bring the angle between -pi and pi
+        if (angle > M_PI)
+            k++;
+        else if (angle < -M_PI)
+            k--;
+
+        // Save the parameters to the motor
+        int idx = getIndex(m_ids, ids[i]);
+        m_motors[idx]->k += k;            
+        m_motors[idx]->refOffset += 2*k*M_PI;
+    }
+}
+
+// Set custom working point
+void MotorHandler::setCustomWorkingPoint()
+{
+    setCustomWorkingPoint(m_ids);
+}
+
+void MotorHandler::setCustomSingleTurn(std::vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+	    int idx = getIndex(m_ids, ids[i]);
+
+        // Set min/max angles to +-pi only if no valid limits have been previously set with setPositionLimits()
+        if(m_motors[idx]->minAngle < -M_PI)
+            m_motors[idx]->minAngle = -M_PI;
+
+        if (m_motors[idx]->maxAngle > M_PI)
+            m_motors[idx]->maxAngle = M_PI;
+
+        // Set settings flags
+        m_motors[idx]->customST = 1;
+        m_motors[idx]->limitAngles = 1;       
+    }
+}
+
+void MotorHandler::setCustomSingleTurn()
+{
+    setCustomSingleTurn(m_ids);
+}
+
+// For custom single turn
+void MotorHandler::setPositionLimits(vector<int> ids, vector<float> minAngles, vector<float> maxAngles)
+{
+    for (int i=0; i<ids.size(); i++) {
+        if (minAngles[i] > maxAngles[0]) {
+            cout << "Error! Trying to set minimal angle bigger than the maximal one for motor "
+            << ids[i] << ". Exiting" << endl;
+            exit(1);
+        }
+
+	    int idx = getIndex(m_ids, ids[i]);
+
+        // If motor previously set as single turn, saturate angles as a security
+        if (m_motors[idx]->customST) {
+            if (maxAngles[i] > M_PI) {
+                cout << "Motor " << ids[i] << " has been previously set as single turn. "
+                "Setting max angle to +PI instead of the requested " << maxAngles[i] << endl; 
+                maxAngles[i] = M_PI;
+
+            }
+            if (minAngles[i] < -M_PI) {
+                cout << "Motor " << ids[i] << " has been previously set as single turn. "
+                "Setting min angle to -PI instead of the requested " << minAngles[i] << endl; 
+                minAngles[i] = -M_PI;
+            }
+        }
+
+        m_motors[idx]->minAngle = minAngles[i];
+        m_motors[idx]->maxAngle = maxAngles[i];
+        m_motors[idx]->limitAngles = 1;
+    }
+}
+
+// For custom single turn
+void MotorHandler::setPositionLimits(vector<float> minAngles, vector<float> maxAngles)
+{
+    setPositionLimits(m_ids, minAngles, maxAngles);
+}
+
+
+void MotorHandler::resetCustomMultiturn(std::vector<int> ids)
+{
+    // Update the working point
+    setCustomWorkingPoint(ids);
+
+    // Go to the 0-position
+    vector<float> zeroes(ids.size(), 0);
+    vector<float> speeds(ids.size(), RESET_SPEED);
+    writePosition_MT(ids, speeds, zeroes);
+    usleep(2*1000000);
+
+    // Reset the motor's multiturn and reset them
+    setMultiturnMode(ids);
+    resetMotors(ids);
+    usleep(1*1000000);
+}
+
+
+void MotorHandler::resetCustomMultiturn()
+{
+    resetCustomMultiturn(m_ids);
 }

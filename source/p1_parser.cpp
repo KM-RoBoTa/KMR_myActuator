@@ -160,7 +160,7 @@ void P1Parser::parseAccSettingsFbck(can_frame frame)
 	// Extract the motor ID from the received frame
 	int id = frame.can_id - 0x240;
 
-	// Get the vector's index
+	// Get the vector's indexề
 	int idx = getIndex(m_ids, id);
 
 	int mode = frame.data[1];

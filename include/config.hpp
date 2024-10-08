@@ -138,6 +138,14 @@ struct Motor {
     uint32_t encoderRawPosition = 0;
     uint32_t encoderZeroOffset = 0;
 
+    // Settings for custom single turn
+    float maxAngle =  M_PI;
+    float minAngle = -M_PI; 
+    int k = 0;              // factor for the 2kpi reference offset
+    float refOffset = 0;
+    bool customST = 0;      // Flag if custom single turn mode is enabled
+    bool limitAngles = 0;   // Flag if angle limits are active
+
     // ST???
     uint16_t encoderPosition_ST = 0;
     uint16_t encoderRawPosition_ST = 0;
