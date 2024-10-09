@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * @file            writer.hpp
- * @brief           Header for the writer.cpp file
+ * @file            p1_writer.hpp
+ * @brief           Header for the p1_writer.cpp file
  ******************************************************************************
  * @copyright
  * Copyright 2021-2023 Laura Paez Coy and Kamilo Melo                    \n
@@ -11,23 +11,21 @@
  ******************************************************************************
  */
 
-#ifndef KMR_MYACTU_WRITER_HPP
-#define KMR_MYACTU_WRITER_HPP
+#ifndef KMR_MYACTU_P1_WRITER_HPP
+#define KMR_MYACTU_P1_WRITER_HPP
 
 #include <vector>
 
 #include "config.hpp"
 #include "utils.hpp"
-#include "p1_writer.hpp"
-//#include "p2_writer.hpp"
 
 /**
  * @brief   CAN bus writer
  */
-class Writer {
+class P1Writer {
 public:
-    Writer(std::vector<Motor*> motors, std::vector<int> ids, int s);
-    ~Writer();
+    P1Writer(std::vector<Motor*> motors, std::vector<int> ids, int s);
+    ~P1Writer();
 
     // PID settings
     int requestPID(int id);                             // 0x30
@@ -94,18 +92,12 @@ public:
     int writePositionIncrement_MT(int id, float maxSpeed, float increment); // 0xA8
 
 
-
-
 private:
     int m_s; // Socket
     std::vector<int> m_ids;
 
     std::vector<Motor*> m_motors;
     int m_nbrMotors;
-
-    // Protocol writers
-    P1Writer* m_p1Writer = nullptr;
-    //p2 writer;
 
 };
 

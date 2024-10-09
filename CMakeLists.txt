@@ -10,6 +10,8 @@ add_library(${PROJECT_NAME}
             source/listener.cpp
             source/motor_handler.cpp
             source/utils.cpp
+            source/p1_writer.cpp
+            #source/p2_parser.cpp
             source/p1_parser.cpp
             source/p2_parser.cpp
             )
