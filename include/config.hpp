@@ -22,6 +22,10 @@
 #define FRAME_LENGTH        8
 #define RESPONSE_TIMEOUT    30*1000 // us
 
+#define MSG_FAIL            -1
+#define MSG_UNSUPPORTED_P1  -2
+#define MSG_UNSUPPORTED_P2  -3
+
 #define ERR_MOTOR_STALL     0x0002
 #define ERR_UNDERVOLTAGE    0x0004
 #define ERR_OVERVOLTAGE     0x0008
@@ -209,6 +213,11 @@ struct Motor {
     bool fw_position_MT = 0; // SAME AS OTHER???
     bool fw_position_ST = 0; 
     bool fw_positionIncr_MT = 0;
+
+
+    // -------------- PROTOCOL 2 --------------- //
+
+    bool fw_commandType = 0;
 
 
     // Constructor

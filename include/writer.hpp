@@ -19,7 +19,7 @@
 #include "config.hpp"
 #include "utils.hpp"
 #include "p1_writer.hpp"
-//#include "p2_writer.hpp"
+#include "p2_writer.hpp"
 
 /**
  * @brief   CAN bus writer
@@ -69,7 +69,7 @@ public:
     int disableCANFilter(int id);            // 0x20
 
     int requestClearMultiturn(int id);      // 0x20
-    int setMultiturnMode(int id);           // 0x20
+    int setMultiturnMode(int id);           // 0x20 + P2
     int setSingleturnMode(int id);          // 0x20
 
     int enableActiveErrorFbck(int id);  // 0x20
@@ -93,7 +93,9 @@ public:
     int writePosition_ST(int id, float maxSpeed, float angle);   // 0xA6
     int writePositionIncrement_MT(int id, float maxSpeed, float increment); // 0xA8
 
+    // Protocol 2
 
+    int setDefaultCommandType(int id);
 
 
 private:
@@ -105,7 +107,7 @@ private:
 
     // Protocol writers
     P1Writer* m_p1Writer = nullptr;
-    //p2 writer;
+    P2Writer* m_p2Writer = nullptr;
 
 };
 

@@ -152,6 +152,11 @@ public:
     void resetCustomMultiturn(std::vector<int> ids);
     void resetCustomMultiturn();
 
+    // ---------- Protocol 2 ----------- //
+
+    bool setDefaultCommandMode(std::vector<int> ids);
+    bool setDefaultCommandMode();
+
 private:
     Listener* m_listener = nullptr;
     Writer* m_writer = nullptr;

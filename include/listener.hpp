@@ -92,6 +92,13 @@ public:
     bool positionST_written(int id);
     bool positionIncrMT_written(int id);
 
+
+    // ---- PROTOCOL 2 ---- //
+    
+    bool defaultCommandType_written(int id);
+
+
+
 private:
     // Thread
     bool m_stopThread = 0;
@@ -104,7 +111,7 @@ private:
 
     // Protocol parsers
     P1Parser* p1Parser = nullptr;
-    //p2 parser;
+    P2Parser* p2Parser = nullptr;
 
     int listenerLoop(int s);
     Protocol getProtocol(can_frame frame);

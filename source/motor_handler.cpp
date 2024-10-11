@@ -53,6 +53,7 @@ MotorHandler::MotorHandler(vector<int> ids, const char* can_bus, vector<Model> m
     m_listener = new Listener(m_motors, ids, s);
 
     usleep(2*1000000);
+    setDefaultCommandMode();
     pingMotors();
 }
 
@@ -924,7 +925,7 @@ bool MotorHandler::disableActiveErrorFbck()
     return(disableActiveErrorFbck(m_ids));
 }
 
-// NEED RESET?
+/// DONE. Needs resets. Also for p2?
 bool MotorHandler::setMultiturnMode(std::vector<int> ids)
 {
     for (int i=0; i<ids.size(); i++) {
@@ -945,7 +946,7 @@ bool MotorHandler::setMultiturnMode(std::vector<int> ids)
         return 0;  
 }
 
-// NEED RESET?
+/// DONE. Needs resets. Also for p2?
 bool MotorHandler::setMultiturnMode()
 {
     return(setMultiturnMode(m_ids));
@@ -1423,3 +1424,39 @@ void MotorHandler::resetCustomMultiturn()
 {
     resetCustomMultiturn(m_ids);
 }
+
+
+// --------------------------------------------
+// ---------- Protocol 2         ----------- //
+// --------------------------------------------
+
+/// DONE
+bool MotorHandler::setDefaultCommandMode(vector<int> ids)
+{
+    for (int i=0; i<ids.size(); i++) {
+        int result = m_writer->setDefaultCommandType(ids[i]);
+        if(result == MSG_FAIL)
+            cout << "[FAILED REQUEST] Failed set default command mode to motor " << ids[i] << endl;
+        else if (result < 0)
+            cout << "Setting default command mode not supported by motor " << ids[i] << endl;
+    }
+
+    int fullSuccess = 0;
+    for (int i=0; i<ids.size(); i++) {
+        bool success = m_listener->defaultCommandType_written(ids[i]);
+        fullSuccess += success;
+    }
+
+    // If no timeout for any motor, return 1. Else, return 0
+    if (fullSuccess == ids.size())
+        return 1;
+    else
+        return 0;  
+}
+
+/// DONE
+bool MotorHandler::setDefaultCommandMode()
+{
+    return (setDefaultCommandMode(m_ids));
+}
+

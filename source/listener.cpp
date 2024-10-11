@@ -46,7 +46,7 @@ Listener::Listener(vector<Motor*> motors, vector<int> ids, int s)
 
 	// Create the protocol-specific parsers
 	p1Parser = new P1Parser(motors, ids, &m_mutex);
-	// p2parser = new P2Parser(motors, ids, &m_mutex);
+	p2Parser = new P2Parser(motors, ids, &m_mutex);
 
     cout << "Creating the CAN listener's thread..." << endl;
 	usleep(50000);  
@@ -92,7 +92,7 @@ int Listener::listenerLoop(int s)
 			if (protocol == PROTOCOL_1)
 				p1Parser->parseFrame(frame);
 			else if (protocol == PROTOCOL_2)
-				exit(1);
+				p2Parser->parseFrame(frame);
 			else
 				cout << "Error! Unknown packet" << endl;
         }
@@ -884,6 +884,7 @@ bool Listener::activeErrorFbckWritten(int id)
 	return available;		
 }
 
+/// DONE
 bool Listener::multiturnModeWritten(int id)
 {
 	int idx = getIndex(m_ids, id);
@@ -1171,6 +1172,46 @@ bool Listener::positionIncrMT_written(int id)
 
 	return available;	
 }
+
+
+
+/*
+ *****************************************************************************
+ *                           PROTOCOL 2
+ ****************************************************************************/
+
+/// DONE
+bool Listener::defaultCommandType_written(int id)
+{
+	int idx = getIndex(m_ids, id);
+	Protocol protocol = m_motors[idx]->protocol;
+	if (protocol == PROTOCOL_1)
+		return 1;
+
+	bool available = 0;
+
+	timespec start = time_s();
+	while (available != 1) {
+		// Check for timeout
+		timespec end = time_s();
+		double elapsed = get_delta_us(end, start);
+		if (elapsed > RESPONSE_TIMEOUT) {
+			cout << "[TIMEOUT] Writing of default command type to motor " << id << " timed out!" << endl;
+			break;
+		}		
+
+		scoped_lock lock(m_mutex);
+		available = m_motors[idx]->fw_commandType;
+
+		// Clear update flag
+		m_motors[idx]->fw_commandType = 0;
+	}
+
+	return available;		
+}
+
+
+
 
 
 

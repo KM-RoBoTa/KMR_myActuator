@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * @file            p2_parser.hpp
- * @brief           Header for the p2_parser.cpp file
+ * @file            p2_writer.hpp
+ * @brief           Header for the p2_writer.cpp file
  ******************************************************************************
  * @copyright
  * Copyright 2021-2023 Laura Paez Coy and Kamilo Melo                    \n
@@ -11,38 +11,33 @@
  ******************************************************************************
  */
 
-#ifndef KMR_MYACTU_P2_PARSER_HPP
-#define KMR_MYACTU_P2_PARSER_HPP
+#ifndef KMR_MYACTU_P2_WRITER_HPP
+#define KMR_MYACTU_P2_WRITER_HPP
 
-#include <iostream>
-#include <mutex>
-#include <thread>
 #include <vector>
-#include <linux/can.h>
 
 #include "config.hpp"
 #include "utils.hpp"
 
-
 /**
- * @brief   Parser for protocol 2
+ * @brief   CAN bus writer for protocol 2 motors
  */
-class P2Parser {
+class P2Writer {
 public:
-    P2Parser(std::vector<Motor*> motors, std::vector<int> ids, std::mutex* mutex);
-    //~P1Parser();
+    P2Writer(std::vector<Motor*> motors, std::vector<int> ids, int s);
+    ~P2Writer();
 
-    void parseFrame(can_frame frame); 
+    int setDefaultCommandType(int id);
+    int setMultiturnMode(int id);
 
 private:
-    std::mutex* m_mutex;
-    std::vector<Motor*> m_motors;
-    int m_nbrMotors;
+    int m_s; // Socket
     std::vector<int> m_ids;
 
-    // ---------  ----------- //
-    void parseDefaultCommandType(can_frame frame);
-    void parseMultiturnMode(can_frame frame);
+    std::vector<Motor*> m_motors;
+    int m_nbrMotors;
+
 };
+
 
 #endif
