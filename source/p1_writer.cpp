@@ -456,7 +456,7 @@ int P1Writer::writeSpeed(int id, float speed)
     return nbytes;   
 }
 
-int P1Writer::writeMotionMode(int id, float pos, float speed, float Kp, float Kd, float Tff)
+int P1Writer::writeHybrid(int id, float pos, float speed, float Kp, float Kd, float Tff)
 {
     // Convert the required values
     pos = -pos;

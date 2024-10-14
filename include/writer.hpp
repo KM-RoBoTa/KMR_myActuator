@@ -53,8 +53,7 @@ public:
     // Commands
     int writeTorque(int id, float torque);  // 0xA1
     int writeSpeed(int id, float speed);    // 0xA2
-    int writeMotionMode(int id, float pos, float speed, float Kp, float Kd, float Tff); // 0x400
-    // !!!!!!!!!!!!!!!!! Very specific case !!!!!!!!!!!!!!¨
+    int writeHybrid(int id, float pos, float speed, float Kp, float Kd, float Tff); // 0x400
 
     // Motor infos
     int requestModel(int id);               // 0xB5

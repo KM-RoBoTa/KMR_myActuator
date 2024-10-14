@@ -624,17 +624,17 @@ bool MotorHandler::writeSpeed(vector<float> speeds)
     return(writeSpeed(m_ids, speeds));
 }
 
-bool MotorHandler::writeMotion(vector<int> ids, vector<float> pos, vector<float> speeds,
+bool MotorHandler::writeHybrid(vector<int> ids, vector<float> pos, vector<float> speeds,
                  vector<float> Kps, vector<float> Kds, vector<float> Tff)
 {
      for (int i=0; i<ids.size(); i++) {
-        if(m_writer->writeMotionMode(ids[i], pos[i], speeds[i], Kps[i], Kds[i], Tff[i]) < 0)
+        if(m_writer->writeHybrid(ids[i], pos[i], speeds[i], Kps[i], Kds[i], Tff[i]) < 0)
             cout << "[FAILED REQUEST] Failed to send motion command to motor " << ids[i] << endl;
     } 
 
     int fullSuccess = 0;
     for (int i=0; i<ids.size(); i++) {
-        bool success = m_listener->motion_written(ids[i]);
+        bool success = m_listener->hybrid_written(ids[i]);
         fullSuccess += success;
     }
 
@@ -645,10 +645,10 @@ bool MotorHandler::writeMotion(vector<int> ids, vector<float> pos, vector<float>
         return 0;  
 }
 
-bool MotorHandler::writeMotion(vector<float> pos, vector<float> speeds,
+bool MotorHandler::writeHybrid(vector<float> pos, vector<float> speeds,
                  vector<float> Kps, vector<float> Kds, vector<float> Tffs)
 {
-    return(writeMotion(m_ids, pos, speeds, Kps, Kds, Tffs));
+    return(writeHybrid(m_ids, pos, speeds, Kps, Kds, Tffs));
 }
 
 

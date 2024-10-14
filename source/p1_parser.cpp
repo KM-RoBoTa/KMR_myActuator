@@ -37,7 +37,7 @@ P1Parser::P1Parser(vector<Motor*> motors, vector<int> ids, mutex* mutex)
 void P1Parser::parseFrame(can_frame frame)
 {
     if (frame.can_id >= 0x501 && frame.can_id <= 0x520) // motion mode
-        parseMotionModeCommand(frame);
+        parseHybridCommand(frame);
     else {
         int command = frame.data[0];
 
@@ -61,7 +61,6 @@ void P1Parser::parseFrame(can_frame frame)
 
         case 0xA1:	parseTorqueCommand(frame); break;
         case 0xA2: 	parseSpeedCommand(frame); break;
-        case 0x500:	parseMotionModeCommand(frame); break;
 
         //case 0xB5: 	parseModel(frame);	break;
         case 0x70:	parseOperatingMode(frame); break;
@@ -443,7 +442,7 @@ void P1Parser::parseSpeedCommand(can_frame frame)
 	m_motors[idx]->fw_speed = 1;			
 }
 
-void P1Parser::parseMotionModeCommand(can_frame frame)
+void P1Parser::parseHybridCommand(can_frame frame)
 {
 	// Extract the motor ID from the received frame
 	int id = frame.can_id - 0x500;
@@ -453,7 +452,7 @@ void P1Parser::parseMotionModeCommand(can_frame frame)
 
 	// Set up confirmation flag
 	scoped_lock lock(*m_mutex);
-	m_motors[idx]->fw_motion = 1;		
+	m_motors[idx]->fw_hybrid = 1;		
 }
 
 

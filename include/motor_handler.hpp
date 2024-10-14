@@ -79,9 +79,9 @@ public:
     bool writeTorque(std::vector<float> torques);
     bool writeSpeed(std::vector<int> ids, std::vector<float> speeds);
     bool writeSpeed(std::vector<float> speeds);
-    bool writeMotion(std::vector<int> ids, std::vector<float> pos, std::vector<float> speeds,
+    bool writeHybrid(std::vector<int> ids, std::vector<float> pos, std::vector<float> speeds,
                     std::vector<float> Kps, std::vector<float> Kds, std::vector<float> Tff);
-    bool writeMotion(std::vector<float> pos, std::vector<float> speeds,
+    bool writeHybrid(std::vector<float> pos, std::vector<float> speeds,
                     std::vector<float> Kps, std::vector<float> Kds, std::vector<float> Tff);
 
     // ----------  Motor info ----------- //

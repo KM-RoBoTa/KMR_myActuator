@@ -276,12 +276,12 @@ int Writer::writeSpeed(int id, float speed)
 }
 
 
-int Writer::writeMotionMode(int id, float pos, float speed, float Kp, float Kd, float Tff)
+int Writer::writeHybrid(int id, float pos, float speed, float Kp, float Kd, float Tff)
 {
     int idx = getIndex(m_ids, id);
     int nbytes = MSG_FAIL;    
     if (m_motors[idx]->protocol == PROTOCOL_1)
-        nbytes = m_p1Writer->writeMotionMode(id, pos, speed, Kp, Kd, Tff);
+        nbytes = m_p1Writer->writeHybrid(id, pos, speed, Kp, Kd, Tff);
     else {
         cout << "Write motion mode protocol 2" << endl;
         nbytes = MSG_UNSUPPORTED_P2;

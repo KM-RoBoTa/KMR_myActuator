@@ -30,6 +30,12 @@ public:
     int setDefaultCommandType(int id);
     int setMultiturnMode(int id);
 
+    // Commands
+    int writeHybrid(int id, float pos, float speed, float Kp, float Kd, float Tff);
+    int writeTorque(int id, float torque);
+    int writeSpeed(int id, float speed);  
+    //int writePosition_MT(int id, float maxSpeed, float angle);
+
 private:
     int m_s; // Socket
     std::vector<int> m_ids;

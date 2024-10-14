@@ -62,7 +62,7 @@ public:
     // ---- Commands ---- //
     bool torque_command_received(int id);
     bool speedWritten(int id);
-    bool motion_written(int id);
+    bool hybrid_written(int id);
 
     // ---- Motor info ---- //
     bool getModel(int id, std::string& model);
@@ -115,60 +115,6 @@ private:
 
     int listenerLoop(int s);
     Protocol getProtocol(can_frame frame);
-
-    // --------- PID ----------- //
-    void parsePIDFbck(can_frame frame);
-    void parsePID_RAM_write(can_frame frame);
-    void parsePID_EEPROM_write(can_frame frame);
-
-    // --------- Acc settings  ----------- //
-    void parseAccSettingsFbck(can_frame frame);
-    void parseAccSettings_write(can_frame frame);
-
-    // --------- On/off  ----------- //
-    void parseShutdown(can_frame frame);
-    void parseStop(can_frame frame);
-    void parseBrakeRelease(can_frame frame);
-    void parseBrakeLock(can_frame frame);
-
-    // ---- Status and errors ---- //
-    void parseErrorReport(can_frame frame);
-    void parseMotorFbck(can_frame frame);
-    void parsePhaseReport(can_frame frame);
-
-    // ---- Commands ---- //
-    void parseTorqueCommand(can_frame frame);
-    void parseSpeedCommand(can_frame frame);
-    void parseMotionModeCommand(can_frame frame);
-
-    // ---- Motor info ---- //
-    //void parseModel(can_frame frame);
-    void parseOperatingMode(can_frame frame);
-    void parsePowerConsumption(can_frame frame);
-    void parseRuntime(can_frame frame);
-    void parseSoftwareDate(can_frame frame);
-
-    // ---- Other settings ---- //
-    void parseCompoundFct(can_frame frame);
-    void parseCANFilter(can_frame frame);
-    void parseMultiturnReset(can_frame frame);
-    void parseMultiturnMode(can_frame frame);
-    void parseActiveError(can_frame frame);
-
-    // ---- Position feedbacks ---- //
-    void parseEncoderFbck(can_frame frame);
-    void parseRawEncoderFbck(can_frame frame);
-    void parseEncoderZeroOffsetRead(can_frame frame);
-    void parseEncoderZeroOffsetWrite(can_frame frame);
-
-    void parseEncoderFbck_ST(can_frame frame);
-
-    void parsePositionFbck_MT(can_frame frame);
-    void parsePositionFbck_ST(can_frame frame);
-
-    void parsePositionCommand_MT(can_frame frame);
-    void parsePositionCommand_ST(can_frame frame);
-    void parsePositionIncrCommand_MT(can_frame frame);
 };
 
 #endif

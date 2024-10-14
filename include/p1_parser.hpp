@@ -63,7 +63,7 @@ private:
     // ---- Commands ---- //
     void parseTorqueCommand(can_frame frame);
     void parseSpeedCommand(can_frame frame);
-    void parseMotionModeCommand(can_frame frame);
+    void parseHybridCommand(can_frame frame);
 
     // ---- Motor info ---- //
     //void parseModel(can_frame frame);

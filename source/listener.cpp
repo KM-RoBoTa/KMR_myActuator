@@ -646,7 +646,7 @@ bool Listener::speedWritten(int id)
 	return available;		
 }
 
-bool Listener::motion_written(int id)
+bool Listener::hybrid_written(int id)
 {
 	int idx = getIndex(m_ids, id);
 	bool available = 0;
@@ -662,10 +662,10 @@ bool Listener::motion_written(int id)
 		}		
 
 		scoped_lock lock(m_mutex);
-		available = m_motors[idx]->fw_motion;
+		available = m_motors[idx]->fw_hybrid;
 
 		// Clear update flag
-		m_motors[idx]->fw_motion = 0;
+		m_motors[idx]->fw_hybrid = 0;
 	}
 
 	return available;	

@@ -186,7 +186,7 @@ struct Motor {
 
     bool fw_torque = 0;
     bool fw_speed = 0;
-    bool fw_motion = 0;
+    bool fw_hybrid = 0;
 
     bool fr_mode = 0;
     bool fr_power = 0;
